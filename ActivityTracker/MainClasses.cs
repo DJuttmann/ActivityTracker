@@ -121,8 +121,8 @@ namespace ActivityTracker
   {
     public int ID {get; private set;}
     private Activity MyActivity;
-    private int TimeSpent;
-    private int PercentFinished;
+    public int TimeSpent {get; private set;}
+    public int PercentFinished {get; private set;}
     private List <Session> Sessions;
 
 
@@ -131,7 +131,23 @@ namespace ActivityTracker
       // [wip] get new instance id from database.
 
       MyActivity = act;
+      TimeSpent = 0;
+      PercentFinished = 0;
     }
+
+
+    public void AddSession (Session newSession)
+    {
+      if (!Sessions.Contains (newSession))
+      {
+        Sessions.Add (newSession);
+        TimeSpent += newSession.TimeSpent;
+        Sessions.Sort ();
+        PercentFinished = Sessions [Sessions.Count - 1].PercentFinished;
+      }
+    }
+
+
   }
 
 
@@ -147,8 +163,30 @@ namespace ActivityTracker
     public int PercentFinished {get; private set;}
 
 
-    public Session ()
+    public Session (int id, DateTime date, int timeSpent, int percentFinished)
     {
+      ID = id;
+      Date = date;
+      TimeSpent = timeSpent;
+      PercentFinished = percentFinished;
+    }
+
+
+    public void SetDateTime (int year, int month, int day, int hour, int minute, int second)
+    {
+      Date = new DateTime (year, month, day, hour, minute, second);
+    }
+
+
+    public void SetTimeSpent (int timeSpent)
+    {
+      TimeSpent = timeSpent;
+    }
+
+
+    public void SetPercentFinished (int percentFinished)
+    {
+      PercentFinished = percentFinished;
     }
   }
 
