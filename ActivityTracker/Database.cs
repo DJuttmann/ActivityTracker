@@ -10,13 +10,18 @@ using System.Data.SQLite;
 namespace ActivityTracker
 {
   
+//========================================================================================
+// Class DatabaseConnection
+﻿//========================================================================================
+
+
   class DatabaseConnection
   {
     private string FileName;
     private SQLiteConnection Connection;
 
-  //========================================================================================
-  // Initialization, open and close
+//========================================================================================
+// Initialization, open and close
 
     // Constructor.
     public DatabaseConnection (string fileName)
@@ -34,7 +39,55 @@ namespace ActivityTracker
     // Create a new database file.
     private bool CreateDatabase ()
     {
-      // [wip] finish this;
+      try
+      {
+        SQLiteConnection.CreateFile (FileName);
+      }
+      catch (SQLiteException ex)
+      {
+        // [wip] show error message?
+        return false;
+      }
+      Connection = new SQLiteConnection ("Data Source=" + FileName + ";Version=3;");
+      if (Open ())
+      {
+        SQLiteCommand command = new SQLiteCommand (Connection);
+
+        command.CommandText = "CREATE TABLE Users " +
+          "(UserID INTEGER PRIMARY KEY, UserName VARCHAR(32), " +
+          "PasswordHash VARCHAR(128), UserType VARCHAR(32))";
+        command.ExecuteNonQuery ();
+
+        command.CommandText = "CREATE TABLE Activities " +
+          "(ActivityID INTEGER PRIMARY KEY, CreatorID INTEGER, " +
+          "ActName VARCHAR(32), Description VARCHAR(1024))";
+        command.ExecuteNonQuery ();
+
+        command.CommandText = "CREATE TABLE Instances " +
+          "(InstanceID INTEGER PRIMARY KEY, UserID INTEGER, ActivityID INTEGER, " +
+          "TimeSpent INTEGER, PercentFinished INTEGER)";
+        command.ExecuteNonQuery ();
+
+        command.CommandText = "CREATE TABLE Sessions " +
+          "(SessionID INTEGER PRIMARY KEY, InstanceID INTEGER, Date VARCHAR(128), " +
+          "TimeSpent INTEGER, PercentFinished INTEGER)";
+        command.ExecuteNonQuery ();
+
+        command.CommandText = "CREATE TABLE Tags " +
+          "(TagID INTEGER PRIMARY KEY, Name VARCHAR(32))";
+        command.ExecuteNonQuery ();
+
+        command.CommandText = "CREATE TABLE UserTags " +
+          "(UserID INTEGER PRIMARY KEY, TagID INTEGER PRIMARY KEY)";
+        command.ExecuteNonQuery ();
+
+        command.CommandText = "CREATE TABLE ActivityTags " +
+          "(ActID INTEGER PRIMARY KEY, TagID INTEGER PRIMARY KEY)";
+        command.ExecuteNonQuery ();
+
+        Close ();
+        return true;
+      }
       return false;
     }
 
@@ -94,6 +147,47 @@ namespace ActivityTracker
     }
 
 //----------------------------------------------------------------------------------------
+// Users
+
+    // Convert string to usertype.
+    private UserType StringToUserType (string s)
+    {
+      if (s == "Student")
+        return UserType.Student;
+      if (s == "Teacher")
+        return UserType.Teacher;
+
+      return UserType.Student; // [wip] maybe return alternative?
+    }
+
+
+    // Load
+    public bool LoadUser (string userName, ref Int64 userID, ref string passwordHash,
+                          ref UserType type)
+    {
+      SQLiteCommand command = new SQLiteCommand (Connection);
+      bool success = false;
+      if (Open ())
+      {
+        command.CommandText = "SELECT * FROM Users WHERE UserName = " + userName;
+        SQLiteDataReader reader = command.ExecuteReader ();
+        if (reader.Read ())
+        {
+          userID = (Int64) reader ["UserID"];
+          passwordHash = (string) reader ["PasswordHash"];
+          type = StringToUserType ((string) reader ["UserType"]);
+          success = true;
+        }
+        if (reader.Read ())
+        {
+          // [wip] handle case when there are multiple users with same name 
+          // (this should never happen!)
+        }
+        Close ();
+      }
+      return success;
+    }
+
 
     // Add user to database;
     public bool AddUser (User user)
@@ -134,6 +228,41 @@ namespace ActivityTracker
     }
 
 //----------------------------------------------------------------------------------------
+// Activities
+
+    // Save all activities from database in list. List allTags must already be filled.
+    public bool LoadAllActivities (List <Activity> activities, List <Tag> allTags)
+    {
+      bool success = false;
+      SQLiteCommand command = new SQLiteCommand (Connection);
+      if (Open ())
+      {
+        activities.Clear ();
+        Activity newActivity = null;
+        command.CommandText = "SELECT * FROM Activities";
+        SQLiteDataReader ActivityReader = command.ExecuteReader ();
+        SQLiteDataReader TagReader;
+        while (ActivityReader.Read ())
+        {
+          newActivity = new Activity (
+            (Int64) ActivityReader ["ActivityID"], 
+            (Int64) ActivityReader ["CreatorID"],
+            (string) ActivityReader ["ActName"],
+            (string) ActivityReader ["Description"]);
+          command.CommandText = "SELECT * FROM ActivityTags WHERE ActID = " +
+                                newActivity.ID.ToString ();
+          TagReader = command.ExecuteReader ();
+          while (TagReader.Read ())
+          {
+            newActivity.AddTag ((Int64) TagReader ["TagID"], allTags);
+          }
+          activities.Add (newActivity);
+        }
+        Close ();
+      }
+      return success;
+    }
+
 
     // Add activity to database;
     public bool AddActivity (Activity activity)
@@ -182,6 +311,7 @@ namespace ActivityTracker
     }
 
 //----------------------------------------------------------------------------------------
+// Instances
       
     // Add an instance to the database.
     public bool AddInstance (Int64 userID, Instance instance)
@@ -238,6 +368,7 @@ namespace ActivityTracker
     }
 
 //----------------------------------------------------------------------------------------
+// Sessions
       
     // Add a session to the database.
     public bool AddSession (Int64 instanceID, Session session)
@@ -295,8 +426,33 @@ namespace ActivityTracker
     }
 
 //----------------------------------------------------------------------------------------
+// Tags
 
-    // Add tag to database;
+    // Load all tags from Database.
+    public bool LoadAllTags (List <Tag> tags)
+    {
+      bool success = false;
+      SQLiteCommand command = new SQLiteCommand (Connection);
+      if (Open ())
+      {
+        tags.Clear ();
+        Tag newTag = null;
+        command.CommandText = "SELECT * FROM Tags";
+        SQLiteDataReader Reader = command.ExecuteReader ();
+        while (Reader.Read ())
+        {
+          newTag = new Tag (
+            (Int64) Reader ["TagID"], 
+            (string) Reader ["Name"]);
+          tags.Add (newTag);
+        }
+        Close ();
+      }
+      return success;
+    }
+
+
+    // Add tag to database.
     public bool AddTag (Tag newTag)
     {
       bool success = false;
@@ -332,6 +488,23 @@ namespace ActivityTracker
     }
 
 
+    // Delete tag from user in the database.
+    public bool RemoveUserTag (Int64 UserID, Int64 TagID)
+    {
+      bool success = false;
+      SQLiteCommand command = new SQLiteCommand (Connection);
+      if (Open ())
+      {
+        command.CommandText = "DELETE FROM UserTags WHERE " +
+          "UserID = " + UserID.ToString () +
+          ", TagID = " + TagID.ToString ();
+        success = command.ExecuteNonQuery () > 0;
+        Close ();
+      }
+      return success;
+    }
+
+
     // Add a tag to a user in the database.
     public bool AddActivityTag (Int64 ActivityID, Int64 TagID)
     {
@@ -348,6 +521,22 @@ namespace ActivityTracker
       return success;
     }
 
+
+    // Delete tag from activity in the database.
+    public bool RemoveActivityTag (Int64 ActivityID, Int64 TagID)
+    {
+      bool success = false;
+      SQLiteCommand command = new SQLiteCommand (Connection);
+      if (Open ())
+      {
+        command.CommandText = "DELETE FROM ActivityTags WHERE " +
+          "ActID = " + ActivityID.ToString () +
+          ", TagID = " + TagID.ToString ();
+        success = command.ExecuteNonQuery () > 0;
+        Close ();
+      }
+      return success;
+    }
   }
 
 }

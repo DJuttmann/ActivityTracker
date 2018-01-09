@@ -6,7 +6,7 @@
 
 using System;
 using System.Collections.Generic;
-//using System.Linq;
+using System.Linq;
 using System.Text;
 //using System.Threading.Tasks;
 using System.IO;
@@ -14,6 +14,7 @@ using System.IO;
 
 namespace ActivityTracker
 {
+
   enum UserType
   {
     Student,
@@ -28,7 +29,7 @@ namespace ActivityTracker
 
   class User
   {
-    public int ID {get; private set;}
+    public Int64 ID {get; private set;}
     public string Name {get; private set;}
     public string PasswordHash {get; private set;}
     public UserType Type {get; private set;}
@@ -47,7 +48,7 @@ namespace ActivityTracker
 
 
     // Constructor from name and password
-    public User (string name, string password)
+    public User (string name, string password, UserType type)
     {
       if (true) // [wip] check if username exists
       {
@@ -57,6 +58,13 @@ namespace ActivityTracker
 
         // [wip] calculate hash for password.
       }
+    }
+
+
+    // Add a new tag to the user.
+    public bool HasTag (Tag newTag)
+    {
+      return Tags.Contains (newTag);
     }
 
 
@@ -72,6 +80,21 @@ namespace ActivityTracker
     public void RemoveTag (Tag deleteTag)
     {
       Tags.Remove (deleteTag);
+    }
+
+
+    // Add a new activity to the user.
+    public void AddActivity (Activity newActivity)
+    {
+      if (!Activities.Contains (newActivity))
+        Activities.Add (newActivity);
+    }
+
+
+    // Remove an activity from the user.
+    public void RemoveActivity (Activity deleteActivity)
+    {
+      Activities.Remove (deleteActivity);
     }
 
 
@@ -105,6 +128,23 @@ namespace ActivityTracker
     }
 
 
+    public bool LoadFromDatabase (DatabaseConnection database, string userName)
+    {
+      Int64 newID = 0;
+      string newPasswordHash = null;
+      UserType newType = UserType.Student; 
+      if (database.LoadUser (userName, ref newID, ref newPasswordHash, ref newType))
+      {
+        ID = newID;
+        PasswordHash = newPasswordHash;
+        Type = newType;
+        return true;
+      }
+      return false;
+    }
+
+
+    /*
     public void AddToDatabase (DatabaseConnection database)
     {
       database.AddUser (this);
@@ -114,7 +154,7 @@ namespace ActivityTracker
     public void UpdateInDatabase (DatabaseConnection database)
     {
       database.UpdateUser (this);
-    }
+    }*/
   }
 
 
@@ -125,24 +165,78 @@ namespace ActivityTracker
 
   class Activity
   {
-    public int ID {get; private set;}
-    public int CreatorID {get; private set;}
+    public Int64 ID {get; private set;}
+    public Int64 CreatorID {get; private set;}
     public string Name {get; private set;}
     public string Description {get; private set;}
     private List <Tag> Tags;
 
 
-
-    public void AddToDatabase (DatabaseConnection database)
+    // Constructor.
+    public Activity (Int64 id, Int64 creatorID, string name, string description)
     {
-      database.AddActivity (this);
+      ID = id;
+      CreatorID = creatorID;
+      Name = name;
+      Description = description;
+      Tags = new List <Tag> ();
     }
 
 
-    public void UpdateInDatabase (DatabaseConnection database)
+    // Check if activity has tag
+    public bool HasTag (Tag tag)
     {
-      database.UpdateActivity (this);
+      return Tags.Any (x => x.Equals (tag));
     }
+
+
+    // Add tag to the Activity.
+    public void AddTag (Tag newTag)
+    {
+      if (!Tags.Any (x => x.Equals (newTag)))
+        Tags.Add (newTag);
+    }
+
+
+    // Add tag to the Activity based on ID and list of all tags.
+    public void AddTag (Int64 tagID, List <Tag> allTags)
+    {
+      Tag newTag = allTags.Find (x => x.ID == tagID);
+      if (newTag != null)
+        AddTag (newTag);
+    }
+
+
+    // Add tag to the Activity based on ID and list of all tags.
+    public void RemoveTag (Tag deleteTag)
+    {
+      for (int i = 0; i < Tags.Count;)
+      {
+        if (Tags [i].Equals (deleteTag))
+          Tags.RemoveAt (i);
+        else
+          i++;
+      }
+    }
+
+
+    /*
+    public void LoadFromDatabase (DatabaseConnection database)
+    {
+      // [wip]
+    }
+
+
+    public bool AddToDatabase (DatabaseConnection database)
+    {
+      return database.AddActivity (this);
+    }
+
+
+    public bool UpdateInDatabase (DatabaseConnection database)
+    {
+      return database.UpdateActivity (this);
+    }*/
 
   }
 
@@ -156,7 +250,7 @@ namespace ActivityTracker
   {
     public int ID {get; private set;}
     private Activity MyActivity;
-    public int ActivityID {get {return MyActivity.ID;}}
+    public Int64 ActivityID {get {return MyActivity.ID;}}
     private List <Session> Sessions;
 
     public int TimeSpent // Time in minutes;
@@ -200,6 +294,7 @@ namespace ActivityTracker
     }
 
 
+    /*
     public void AddToDatabase (DatabaseConnection database, User parentUser)
     {
       database.AddInstance (parentUser.ID, this);
@@ -215,7 +310,7 @@ namespace ActivityTracker
     public void DeleteFromDatabase (DatabaseConnection database)
     {
       database.DeleteInstance (this.ID);
-    }
+    }*/
 
 
     private static int CompareDates (Session a, Session b)
@@ -268,6 +363,7 @@ namespace ActivityTracker
     }
 
 
+    /*
     public void AddToDatabase (DatabaseConnection database, Instance parentInstance)
     {
       database.AddSession (parentInstance.ID, this);
@@ -283,7 +379,7 @@ namespace ActivityTracker
     public void DeleteFromDatabase (DatabaseConnection database)
     {
       database.DeleteSession (this.ID);
-    }
+    }*/
   }
 
 
@@ -294,16 +390,25 @@ namespace ActivityTracker
 
   class Tag
   {
-    public int ID {get; private set;}
+    public Int64 ID {get; private set;}
     public string Name {get; private set;}
 
 
-    Tag (int id, string name)
+    public Tag (Int64 id, string name)
     {
       ID = id;
       Name = name;
     }
 
+
+    public override bool Equals (object obj)
+    {
+      if (obj is Tag t)
+      {
+        return t.ID == ID;
+      }
+      return false;
+    }
   }
 
 
