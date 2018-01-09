@@ -20,9 +20,39 @@ namespace ActivityTracker
   /// </summary>
   public partial class MainWindow: Window
   {
+    Project MainProject;
+
     public MainWindow ()
     {
       InitializeComponent ();
+
+      MainProject = new Project ();
+    }
+
+
+﻿//========================================================================================
+// Event handlers
+
+    private void MenuRegisterClick (object sender, RoutedEventArgs e)
+    {
+      // Launch the registration window.
+    }
+
+
+    private void MenuLoginClick (object sender, RoutedEventArgs e)
+    {
+      // Launch the login Window
+    }
+
+
+    private void MenuLogoutClick (object sender, RoutedEventArgs e)
+    {
+      // Log out.
+    }
+
+    private void TextBox_TextChanged (object sender, TextChangedEventArgs e)
+    {
+
     }
   }
 }

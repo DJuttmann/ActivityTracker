@@ -5,8 +5,97 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ActivityTracker"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
-    <Grid>
-        
+        Title="Activity Tracker" Height="350" Width="525">
+
+    <Grid x:Name="Root">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
+
+        <!-- MENU -->
+        <Menu HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0">
+            <MenuItem Header="_File">
+                <MenuItem x:Name="MenuImport" Header="_Import"/>
+                <MenuItem x:Name="MenuExport" Header="_Export"/>
+                <MenuItem x:Name="MenuQuit" Header="_Quit"/>
+            </MenuItem>
+            <MenuItem Header="_View">
+                <MenuItem x:Name="MenuInstances" Header="_User Activities"/>
+                <MenuItem x:Name="MenuActivities" Header="_Activity list"/>
+            </MenuItem>
+            <MenuItem Header="_User">
+                <MenuItem x:Name="MenuLogin" Header="Log _in" Click="MenuLoginClick"/>
+                <MenuItem x:Name="MenuLogout" Header="Log _out" Click="MenuLogoutClick"/>
+                <MenuItem x:Name="MenuRegister" Header="_Register" Click="MenuRegisterClick"/>
+                <MenuItem x:Name="MenuEditAccount" Header="_Edit account"/>
+            </MenuItem>
+            <MenuItem Header="_Settings">
+                <MenuItem Header="_Settings"/>
+            </MenuItem>
+        </Menu>
+
+        <Grid x:Name="Toolbar" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1">
+            <Grid.Background>
+                <SolidColorBrush Color="#FFA6CAED"/>
+            </Grid.Background>
+            <Label Content="&lt;TITLE&gt;" HorizontalAlignment="Left" Height="31" VerticalAlignment="Top" Width="129" FontSize="16"/>
+            <Button Content="Add" HorizontalAlignment="Left" Margin="134,5,0,0" VerticalAlignment="Top" Width="75"/>
+            <Button Content="Edit" HorizontalAlignment="Left" Margin="224,5,0,0" VerticalAlignment="Top" Width="76"/>
+            <Button Content="Delete" HorizontalAlignment="Left" Margin="313,5,0,0" VerticalAlignment="Top" Width="75"/>
+        </Grid>
+
+        <Grid x:Name="MainGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="128*"/>
+                <ColumnDefinition Width="46*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- ACTIVITIES -->
+            <Border BorderBrush="#000000" BorderThickness="1" Grid.Column="0">
+                <Grid x:Name="ActivityView" Visibility="Visible" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0">
+                        <Grid.Background>
+                            <SolidColorBrush Color="#FFF0F0F0"/>
+                        </Grid.Background>
+                        <Label Content="Available Activities" HorizontalAlignment="Left" Margin="5,2,0,0" VerticalAlignment="Top" Height="25" Width="107" Grid.Column="1"/>
+                        <Label Content="Sort by" HorizontalAlignment="Left" HorizontalContentAlignment="Right" Height="25" Margin="198,2,0,0" VerticalAlignment="Top" Width="86"/>
+                    </Grid>
+                    <ScrollViewer HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1"/>
+                </Grid>
+            </Border>
+            <Border BorderBrush="#000000" BorderThickness="1" Grid.Column="1">
+                <Grid x:Name="FindActivity" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="26"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0">
+                        <Grid.Background>
+                            <SolidColorBrush Color="#FFE0E0E0"/>
+                        </Grid.Background>
+                        <Label Content="Find Activity" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    </Grid>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1">
+                        <Grid.Background>
+                            <SolidColorBrush Color="#FFF0F0F0"/>
+                        </Grid.Background>
+                        <Label Content="Filter by" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="55"/>
+                        <ComboBox HorizontalAlignment="Left" Height="16" Margin="55,5,0,0" VerticalAlignment="Top" Width="76"/>
+                        <Label Content="Search for" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="86" Margin="0,28,0,0"/>
+                        <TextBox HorizontalAlignment="Left" Height="19" Margin="7,54,0,0" TextWrapping="Wrap" Text="&lt;Tag&gt;" VerticalAlignment="Top" Width="124" TextChanged="TextBox_TextChanged"/>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <Grid x:Name="InstanceView" Visibility="Hidden" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0"/>
+
+            <Grid x:Name="SessionView" Visibility="Hidden" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0"/>
+        </Grid>
     </Grid>
 </Window>

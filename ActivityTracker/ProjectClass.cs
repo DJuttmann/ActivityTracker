@@ -22,7 +22,7 @@ namespace ActivityTracker
     string DatabaseFileName = "ActivityDatabase.sqlite";
 
     
-    Project () {
+    public Project () {
       Users = new List <User> ();
       Activities = new List <Activity> ();
       ActiveUser = null;
