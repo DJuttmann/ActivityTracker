@@ -455,6 +455,8 @@ namespace ActivityTracker
     // Add tag to database.
     public bool AddTag (Tag newTag)
     {
+      // [wip] Check if tag name exists already!
+
       bool success = false;
       SQLiteCommand command = new SQLiteCommand (Connection);
       if (Open ())

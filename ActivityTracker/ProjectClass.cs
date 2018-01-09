@@ -165,9 +165,6 @@ namespace ActivityTracker
     // Create new activity owned by user.
     public bool CreateActivity (User user, string name, string description)
     {
-      if (ActiveUser == null)
-        return false;
-
       Int64 id = Database.NewActivityID ();
 
       Activity newActivity = new Activity (id, user.ID, name, description);
@@ -201,6 +198,65 @@ namespace ActivityTracker
       if (Database.RemoveActivityTag (activity.ID, tag.ID))
       {
         activity.RemoveTag (tag);
+        return true;
+      }
+      return false;
+    }
+
+
+//========================================================================================
+// Instance management
+
+
+    public bool CreateInstance (User user, Activity activity)
+    {
+      Int64 id = Database.NewInstanceID ();
+
+      Instance newInstance = new Instance (id, activity);
+      if (Database.AddInstance (user.ID, newInstance))
+      {
+        user.AddInstance (newInstance);
+        return true;
+      }
+      return false;
+    }
+
+//========================================================================================
+// Session management
+
+
+    public bool CreateSession (Instance instance, DateTime date, Int64 timeSpent, 
+                               Int64 percentFinished)
+    {
+      Int64 id = Database.NewSessionID ();
+
+      Session newSession = new Session (id, date, timeSpent, percentFinished);
+      if (Database.AddSession (instance.ID, newSession))
+      {
+        instance.AddSession (newSession);
+        return true;
+      }
+      return false;
+    }
+
+
+//    public bool DeleteSession (Session session)
+//    {
+//      if (Database.DeleteSession (session.ID))
+//    }
+
+//========================================================================================
+// Tag management
+
+
+    public bool CreateTag (string name)
+    {
+      Int64 id = Database.NewTagID ();
+
+      Tag newTag = new Tag (id, name);
+      if (Database.AddTag (newTag))
+      {
+        Tags.Add (newTag);
         return true;
       }
       return false;

@@ -99,10 +99,10 @@ namespace ActivityTracker
 
 
     // Add an activity instance to the user.
-    public void AddInstance (Activity act)
+    public void AddInstance (Instance instance)
     {
-      Instance i = new Instance (act);
-      Instances.Add (i);
+      if (!Instances.Contains (instance))
+        Instances.Add (instance);
     }
 
 
@@ -143,18 +143,6 @@ namespace ActivityTracker
       return false;
     }
 
-
-    /*
-    public void AddToDatabase (DatabaseConnection database)
-    {
-      database.AddUser (this);
-    }
-
-
-    public void UpdateInDatabase (DatabaseConnection database)
-    {
-      database.UpdateUser (this);
-    }*/
   }
 
 
@@ -219,25 +207,6 @@ namespace ActivityTracker
       }
     }
 
-
-    /*
-    public void LoadFromDatabase (DatabaseConnection database)
-    {
-      // [wip]
-    }
-
-
-    public bool AddToDatabase (DatabaseConnection database)
-    {
-      return database.AddActivity (this);
-    }
-
-
-    public bool UpdateInDatabase (DatabaseConnection database)
-    {
-      return database.UpdateActivity (this);
-    }*/
-
   }
 
 
@@ -248,16 +217,16 @@ namespace ActivityTracker
 
   class Instance
   {
-    public int ID {get; private set;}
+    public Int64 ID {get; private set;}
     private Activity MyActivity;
     public Int64 ActivityID {get {return MyActivity.ID;}}
     private List <Session> Sessions;
 
-    public int TimeSpent // Time in minutes;
+    public Int64 TimeSpent // Time in minutes;
     {
       get
       {
-        int time = 0;
+        Int64 time = 0;
         foreach (Session s in Sessions)
         {
           time += s.TimeSpent;
@@ -266,7 +235,7 @@ namespace ActivityTracker
       }
     }
 
-    public int PercentFinished
+    public Int64 PercentFinished
     {
       get
       {
@@ -276,10 +245,9 @@ namespace ActivityTracker
 
 //----------------------------------------------------------------------------------------
 
-    public Instance (Activity act)
+    public Instance (Int64 id, Activity act)
     {
-      // [wip] get new instance id from database.
-
+      ID = id;
       MyActivity = act;
     }
 
@@ -292,25 +260,6 @@ namespace ActivityTracker
         Sessions.Sort (CompareDates); // sort by date
       }
     }
-
-
-    /*
-    public void AddToDatabase (DatabaseConnection database, User parentUser)
-    {
-      database.AddInstance (parentUser.ID, this);
-    }
-
-
-    public void UpdateInDatabase (DatabaseConnection database)
-    {
-      database.UpdateInstance (this);
-    }
-
-
-    public void DeleteFromDatabase (DatabaseConnection database)
-    {
-      database.DeleteInstance (this.ID);
-    }*/
 
 
     private static int CompareDates (Session a, Session b)
@@ -330,13 +279,13 @@ namespace ActivityTracker
 
   class Session
   {
-    public int ID {get; private set;}
+    public Int64 ID {get; private set;}
     public DateTime Date {get; private set;}
-    public int TimeSpent {get; private set;}
-    public int PercentFinished {get; private set;}
+    public Int64 TimeSpent {get; private set;}
+    public Int64 PercentFinished {get; private set;}
 
 
-    public Session (int id, DateTime date, int timeSpent, int percentFinished)
+    public Session (Int64 id, DateTime date, Int64 timeSpent, Int64 percentFinished)
     {
       ID = id;
       Date = date;
@@ -362,24 +311,6 @@ namespace ActivityTracker
       PercentFinished = percentFinished;
     }
 
-
-    /*
-    public void AddToDatabase (DatabaseConnection database, Instance parentInstance)
-    {
-      database.AddSession (parentInstance.ID, this);
-    }
-
-
-    public void UpdateInDatabase (DatabaseConnection database)
-    {
-      database.UpdateSession (this);
-    }
-
-
-    public void DeleteFromDatabase (DatabaseConnection database)
-    {
-      database.DeleteSession (this.ID);
-    }*/
   }
 
 
@@ -409,6 +340,7 @@ namespace ActivityTracker
       }
       return false;
     }
+
   }
 
 
