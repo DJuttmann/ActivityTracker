@@ -40,10 +40,12 @@
             <Grid.Background>
                 <SolidColorBrush Color="#FFA6CAED"/>
             </Grid.Background>
-            <Label Content="&lt;TITLE&gt;" HorizontalAlignment="Left" Height="31" VerticalAlignment="Top" Width="129" FontSize="16"/>
-            <Button Content="Add" HorizontalAlignment="Left" Margin="134,5,0,0" VerticalAlignment="Top" Width="75"/>
-            <Button Content="Edit" HorizontalAlignment="Left" Margin="224,5,0,0" VerticalAlignment="Top" Width="76"/>
-            <Button Content="Delete" HorizontalAlignment="Left" Margin="313,5,0,0" VerticalAlignment="Top" Width="75"/>
+            <Label x:Name="ViewTitle" Content="&lt;TITLE&gt;" HorizontalAlignment="Left" Height="31" VerticalAlignment="Top" Width="129" FontSize="16"/>
+            <Button Content="Add" HorizontalAlignment="Left" Margin="148,5,0,0" VerticalAlignment="Top" Width="64"/>
+            <Button Content="Edit" HorizontalAlignment="Left" Margin="222,5,0,0" VerticalAlignment="Top" Width="64"/>
+            <Button Content="Delete" HorizontalAlignment="Left" Margin="296,5,0,0" VerticalAlignment="Top" Width="64"/>
+            <Button Content="Start Activity" HorizontalAlignment="Left" Margin="428,5,0,0" VerticalAlignment="Top" Width="86
+                    "/>
         </Grid>
 
         <Grid x:Name="MainGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="2">
@@ -53,8 +55,8 @@
             </Grid.ColumnDefinitions>
 
             <!-- ACTIVITIES -->
-            <Border BorderBrush="#000000" BorderThickness="1" Grid.Column="0">
-                <Grid x:Name="ActivityView" Visibility="Visible" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Border x:Name="ActivityView" Visibility="Hidden" BorderBrush="#000000" BorderThickness="1" Grid.Column="0">
+                <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="30"/>
                         <RowDefinition Height="1*"/>
@@ -69,8 +71,10 @@
                     <ScrollViewer HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1"/>
                 </Grid>
             </Border>
-            <Border BorderBrush="#000000" BorderThickness="1" Grid.Column="1">
-                <Grid x:Name="FindActivity" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+
+            <!-- FIND ACTIVITY -->
+            <Border x:Name="FindActivity" Visibility="Hidden" BorderBrush="#000000" BorderThickness="1" Grid.Column="1">
+                <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="26"/>
                         <RowDefinition Height="1*"/>
@@ -93,9 +97,97 @@
                 </Grid>
             </Border>
 
-            <Grid x:Name="InstanceView" Visibility="Hidden" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0"/>
 
-            <Grid x:Name="SessionView" Visibility="Hidden" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="0"/>
+            <!-- INSTANCES -->
+            <Border x:Name="InstanceView" Visibility="Visible" BorderBrush="#000000" BorderThickness="1" Grid.Column="0">
+                <Grid Visibility="Visible" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0">
+                        <Grid.Background>
+                            <SolidColorBrush Color="#FFF0F0F0"/>
+                        </Grid.Background>
+                        <Label x:Name="InstancesText" Content="Activities for &lt;user&gt;" HorizontalAlignment="Left" Margin="5,2,0,0" VerticalAlignment="Top" Height="25" Width="139"/>
+                        <Label x:Name="SortInstancesText" Content="Sort by" HorizontalAlignment="Left" HorizontalContentAlignment="Right" Height="25" Margin="198,2,0,0" VerticalAlignment="Top" Width="86"/>
+                    </Grid>
+                    <ScrollViewer HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1"/>
+                </Grid>
+            </Border>
+
+            <!-- SELECT USER -->
+            <Border x:Name="SelectUser" Visibility="Visible" BorderBrush="#000000" BorderThickness="1" Grid.Column="1">
+                <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="26"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0">
+                        <Grid.Background>
+                            <SolidColorBrush Color="#FFE0E0E0"/>
+                        </Grid.Background>
+                        <Label Content="Select User" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    </Grid>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1">
+                        <Grid.Background>
+                            <SolidColorBrush Color="#FFF0F0F0"/>
+                        </Grid.Background>
+                        <Label Content="Filter by" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="55"/>
+                        <ComboBox HorizontalAlignment="Left" Height="16" Margin="55,5,0,0" VerticalAlignment="Top" Width="76"/>
+                        <Label Content="Search for" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="86" Margin="0,28,0,0"/>
+                        <TextBox HorizontalAlignment="Left" Height="19" Margin="6,54,0,0" TextWrapping="Wrap" Text="&lt;Tag&gt;" VerticalAlignment="Top" Width="124" TextChanged="TextBox_TextChanged"/>
+                        <ListBox HorizontalAlignment="Left" Height="147" Margin="6,86,0,0" VerticalAlignment="Top" Width="124"/>
+                    </Grid>
+                </Grid>
+            </Border>
+
+
+            <!-- SESSIONS -->
+            <Border x:Name="SessionView" Visibility="Hidden" BorderBrush="#000000" BorderThickness="1" Grid.Column="0">
+                <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0">
+                        <Grid.Background>
+                            <SolidColorBrush Color="#FFF0F0F0"/>
+                        </Grid.Background>
+                        <Label x:Name="SessionsText" Content="&lt;Project name&gt; sessions" HorizontalAlignment="Left" Margin="5,2,0,0" VerticalAlignment="Top" Height="25" Width="288"/>
+                        <Label x:Name="ProgressText" Content="00:00h 0%" HorizontalAlignment="Left" HorizontalContentAlignment="Right" Height="25" Margin="298,2,0,0" VerticalAlignment="Top" Width="78"/>
+                    </Grid>
+                    <ScrollViewer HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1"/>
+                </Grid>
+            </Border>
+
+            <!-- NEW SESSION -->
+            <Border x:Name="NewSession" Visibility="Hidden" BorderBrush="#000000" BorderThickness="1" Grid.Column="1">
+                <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="26"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0">
+                        <Grid.Background>
+                            <SolidColorBrush Color="#FFE0E0E0"/>
+                        </Grid.Background>
+                        <Label Content="New Session" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    </Grid>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1">
+                        <Grid.Background>
+                            <SolidColorBrush Color="#FFF0F0F0"/>
+                        </Grid.Background>
+                        <Label Content="Date" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="86"/>
+                        <TextBox HorizontalAlignment="Left" Height="19" Margin="7,26,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="124" TextChanged="TextBox_TextChanged"/>
+                        <Label Content="Time spent" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="86" Margin="0,46,0,0"/>
+                        <TextBox HorizontalAlignment="Left" Height="19" Margin="7,71,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="124" TextChanged="TextBox_TextChanged"/>
+                        <Label Content="% finished" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="86" Margin="0,91,0,0"/>
+                        <TextBox HorizontalAlignment="Left" Height="19" Margin="7,117,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="124" TextChanged="TextBox_TextChanged"/>
+                    </Grid>
+                </Grid>
+            </Border>
+
         </Grid>
     </Grid>
 </Window>

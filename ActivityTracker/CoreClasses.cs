@@ -15,7 +15,7 @@ using System.IO;
 namespace ActivityTracker
 {
 
-  enum UserType
+  public enum UserType
   {
     Student,
     Teacher
@@ -27,7 +27,7 @@ namespace ActivityTracker
 ﻿//========================================================================================
 
 
-  class User
+  public class User
   {
     public Int64 ID {get; private set;}
     public string Name {get; private set;}
@@ -151,7 +151,7 @@ namespace ActivityTracker
 ﻿//========================================================================================
 
 
-  class Activity
+  public class Activity
   {
     public Int64 ID {get; private set;}
     public Int64 CreatorID {get; private set;}
@@ -215,7 +215,7 @@ namespace ActivityTracker
 ﻿//========================================================================================
 
 
-  class Instance
+  public class Instance
   {
     public Int64 ID {get; private set;}
     private Activity MyActivity;
@@ -277,7 +277,7 @@ namespace ActivityTracker
 // Class Session
 ﻿//========================================================================================
 
-  class Session
+  public class Session
   {
     public Int64 ID {get; private set;}
     public DateTime Date {get; private set;}
@@ -319,7 +319,7 @@ namespace ActivityTracker
 ﻿//========================================================================================
 
 
-  class Tag
+  public class Tag
   {
     public Int64 ID {get; private set;}
     public string Name {get; private set;}

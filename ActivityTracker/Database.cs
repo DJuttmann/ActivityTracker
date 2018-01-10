@@ -15,7 +15,7 @@ namespace ActivityTracker
 ﻿//========================================================================================
 
 
-  class DatabaseConnection
+  public class DatabaseConnection
   {
     private string FileName;
     private SQLiteConnection Connection;
@@ -29,9 +29,14 @@ namespace ActivityTracker
       if (fileName != null)
       {
         FileName = fileName;
-        if (!File.Exists (FileName))
+        Connection = new SQLiteConnection ("Data Source=" + FileName + ";Version=3;");
+        bool b = !File.Exists (FileName);
+        if (b)
+        {
+          System.Windows.MessageBox.Show ("here we are");
           if (!CreateDatabase ())
-            throw new FileNotFoundException ("Database file not found: ", FileName);
+            throw new FileNotFoundException ("Database file not accessible: ", FileName);
+        }
       }
     }
 
@@ -45,6 +50,7 @@ namespace ActivityTracker
       }
       catch (SQLiteException ex)
       {
+        System.Windows.MessageBox.Show (ex.Message);
         // [wip] show error message?
         return false;
       }
@@ -55,7 +61,7 @@ namespace ActivityTracker
 
         command.CommandText = "CREATE TABLE Users " +
           "(UserID INTEGER PRIMARY KEY, UserName VARCHAR(32), " +
-          "PasswordHash VARCHAR(128), UserType VARCHAR(32))";
+          "PasswordHash VARCHAR(1024), UserType VARCHAR(32))";
         command.ExecuteNonQuery ();
 
         command.CommandText = "CREATE TABLE Activities " +
@@ -78,11 +84,11 @@ namespace ActivityTracker
         command.ExecuteNonQuery ();
 
         command.CommandText = "CREATE TABLE UserTags " +
-          "(UserID INTEGER PRIMARY KEY, TagID INTEGER PRIMARY KEY)";
+          "(UserID INTEGER, TagID INTEGER, PRIMARY KEY (UserID, TagID))";
         command.ExecuteNonQuery ();
 
         command.CommandText = "CREATE TABLE ActivityTags " +
-          "(ActID INTEGER PRIMARY KEY, TagID INTEGER PRIMARY KEY)";
+          "(ActID INTEGER, TagID INTEGER, PRIMARY KEY (ActID, TagID))";
         command.ExecuteNonQuery ();
 
         Close ();
@@ -95,7 +101,6 @@ namespace ActivityTracker
     // Open a connection to the database.
     private bool Open ()
     {
-      Connection = new SQLiteConnection ("Data Source=" + FileName + ";Version=3;");
       try
       {
         Connection.Open ();
@@ -150,7 +155,7 @@ namespace ActivityTracker
 // Users
 
     // Convert string to usertype.
-    private UserType StringToUserType (string s)
+    public static UserType StringToUserType (string s)
     {
       if (s == "Student")
         return UserType.Student;
@@ -169,7 +174,7 @@ namespace ActivityTracker
       bool success = false;
       if (Open ())
       {
-        command.CommandText = "SELECT * FROM Users WHERE UserName = " + userName;
+        command.CommandText = "SELECT * FROM Users WHERE UserName = '" + userName + "'";
         SQLiteDataReader reader = command.ExecuteReader ();
         if (reader.Read ())
         {

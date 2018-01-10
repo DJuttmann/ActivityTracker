@@ -12,39 +12,73 @@ namespace ActivityTracker
 // Class Project
 ﻿//========================================================================================
 
-  class Project
+  public class Project
   {
     private List <User> Users;
     private List <Activity> Activities;
     private List <Tag> Tags; 
-    private User ActiveUser;
+    private User ActiveUser; // The user who is logged in.
+    private User SelectedUser; // The user whose data is being viewed.
+    private Activity SelectedActivity;
+    private Instance SelectedInstance;
     DatabaseConnection Database;
-    string DatabaseFileName = "ActivityDatabase.sqlite";
+    private string DatabaseFileName;
+
+
+
+    public string SelectedUserName
+    {
+      get
+      {
+        return SelectedUser != null ? SelectedUser.Name : "";
+      }
+    }
+
+    public string SelectedActivityName
+    {
+      get
+      {
+        return SelectedActivity != null ? SelectedActivity.Name : "";
+      }
+    }
 
     
+    // Constructor.
     public Project () {
       Users = new List <User> ();
       Activities = new List <Activity> ();
       ActiveUser = null;
+      SelectedUser = null;
+      SelectedActivity = null;
+      SelectedInstance = null;
       Database = null;
+      DatabaseFileName = null;
     }
 
 
-    bool LoadDatabase ()
+    // Load a database file.
+    public bool LoadDatabase (string fileName)
     {
+      bool success = true;
       try
       {
-        Database = new DatabaseConnection (DatabaseFileName);
+        Database = new DatabaseConnection (fileName);
         if (!Database.LoadAllTags (Tags))
-          return false;
+          success = false;
         if (!Database.LoadAllActivities (Activities, Tags))
-          return false;
+          success = false;
       }
-      catch
+      catch (Exception ex)
       {
+        System.Windows.MessageBox.Show ("Failed to open database connection." +
+                                        Environment.NewLine +
+                                        ex.Message);
         return false;
       }
-      return true;
+      DatabaseFileName = fileName;
+      if (!success)
+        System.Windows.MessageBox.Show ("Failed to load activity and/or tag lists.");
+      return success;
     }
 
 
@@ -98,7 +132,7 @@ namespace ActivityTracker
     // Register a new user into the system.
     public bool RegisterUser (string userName, string password, UserType type)
     {
-      if (ActiveUser != null) // cannot register if someone is already logged in
+      if (Database == null || ActiveUser != null) // cannot register if someone is already logged in
         return false;
       if (!ValidatePassword (password))
         return false;
@@ -109,6 +143,7 @@ namespace ActivityTracker
       if (Database.AddUser (newUser))
       {
         ActiveUser = newUser; // new user is logged in
+        SelectedUser = ActiveUser;
         return true;
       }
       return false;
@@ -126,6 +161,7 @@ namespace ActivityTracker
       if (tempUser.PasswordHash == CreateHash (password))
       {
         ActiveUser = tempUser;
+        SelectedUser = ActiveUser;
         return true;
       }
       return false;
