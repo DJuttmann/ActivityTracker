@@ -33,7 +33,6 @@ namespace ActivityTracker
         bool b = !File.Exists (FileName);
         if (b)
         {
-          System.Windows.MessageBox.Show ("here we are");
           if (!CreateDatabase ())
             throw new FileNotFoundException ("Database file not accessible: ", FileName);
         }
@@ -245,8 +244,8 @@ namespace ActivityTracker
         activities.Clear ();
         Activity newActivity = null;
         command.CommandText = "SELECT * FROM Activities";
+
         SQLiteDataReader ActivityReader = command.ExecuteReader ();
-        SQLiteDataReader TagReader;
         while (ActivityReader.Read ())
         {
           newActivity = new Activity (
@@ -254,15 +253,23 @@ namespace ActivityTracker
             (Int64) ActivityReader ["CreatorID"],
             (string) ActivityReader ["ActName"],
             (string) ActivityReader ["Description"]);
+          activities.Add (newActivity);
+        }
+        ActivityReader.Close ();
+
+        SQLiteDataReader TagReader;
+        foreach (Activity activity in activities)
+        {
           command.CommandText = "SELECT * FROM ActivityTags WHERE ActID = " +
-                                newActivity.ID.ToString ();
+                                activity.ID.ToString ();
           TagReader = command.ExecuteReader ();
           while (TagReader.Read ())
           {
-            newActivity.AddTag ((Int64) TagReader ["TagID"], allTags);
+            activity.AddTag ((Int64) TagReader ["TagID"], allTags);
           }
-          activities.Add (newActivity);
+          TagReader.Close ();
         }
+        success = true;
         Close ();
       }
       return success;
@@ -278,7 +285,7 @@ namespace ActivityTracker
       {
         command.CommandText = "INSERT INTO Activities " +
           "(ActivityID, CreatorID, ActName, Description) values (" +
-          activity.ID.ToString () + ", '" +
+          activity.ID.ToString () + ", " +
           activity.CreatorID.ToString () + ", '" +
           activity.Name + "', '" +
           activity.Description + "')";
@@ -451,6 +458,7 @@ namespace ActivityTracker
             (string) Reader ["Name"]);
           tags.Add (newTag);
         }
+        success = true;
         Close ();
       }
       return success;

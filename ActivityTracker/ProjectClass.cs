@@ -47,6 +47,7 @@ namespace ActivityTracker
     public Project () {
       Users = new List <User> ();
       Activities = new List <Activity> ();
+      Tags = new List <Tag> ();
       ActiveUser = null;
       SelectedUser = null;
       SelectedActivity = null;
@@ -139,7 +140,8 @@ namespace ActivityTracker
 
       // [wip] check if the username already exists!
       
-      User newUser = new User (userName, CreateHash (password), type);
+      User newUser = new User (Database.NewUserID (), userName,
+                               CreateHash (password), type);
       if (Database.AddUser (newUser))
       {
         ActiveUser = newUser; // new user is logged in
@@ -157,8 +159,13 @@ namespace ActivityTracker
         return false;
 
       User tempUser = new User ();
-      tempUser.LoadFromDatabase (Database, userName);
-      if (tempUser.PasswordHash == CreateHash (password))
+      if (!tempUser.LoadFromDatabase (Database, userName))
+      {
+        System.Windows.MessageBox.Show ("Username not found.");
+        return false; // user not found.
+      }
+      // [wip] password check disabled for now
+      if (true) // tempUser.PasswordHash == CreateHash (password))
       {
         ActiveUser = tempUser;
         SelectedUser = ActiveUser;
@@ -198,16 +205,16 @@ namespace ActivityTracker
 // Activity management
 
    
-    // Create new activity owned by user.
-    public bool CreateActivity (User user, string name, string description)
+    // Create new activity owned by SelectedUser.
+    public bool CreateActivity (string name, string description)
     {
       Int64 id = Database.NewActivityID ();
 
-      Activity newActivity = new Activity (id, user.ID, name, description);
+      Activity newActivity = new Activity (id, SelectedUser.ID, name, description);
       if (Database.AddActivity (newActivity))
       {
         Activities.Add (newActivity);
-        user.AddActivity (newActivity);
+        SelectedUser.AddActivity (newActivity);
         return true;
       }
       return false;
@@ -237,6 +244,14 @@ namespace ActivityTracker
         return true;
       }
       return false;
+    }
+
+
+    public Activity GetActivity (int index)
+    {
+      if (index < 0 || index >= Activities.Count)
+        return null;
+      return Activities [index];
     }
 
 

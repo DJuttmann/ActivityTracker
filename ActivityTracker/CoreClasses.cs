@@ -44,20 +44,25 @@ namespace ActivityTracker
       ID = 0;
       Name = "";
       PasswordHash = "";
+      Type = UserType.Student;
+
+      Tags = new List <Tag> ();
+      Instances = new List <Instance> ();
+      Activities = new List <Activity> ();
     }
 
 
     // Constructor from name and password
-    public User (string name, string password, UserType type)
+    public User (Int64 id, string name, string password, UserType type)
     {
-      if (true) // [wip] check if username exists
-      {
-        Name = name;
+      ID = id;
+      Name = name;
+      PasswordHash = password;
+      Type = type;
 
-        // [wip] get new id from database.
-
-        // [wip] calculate hash for password.
-      }
+      Tags = new List <Tag> ();
+      Instances = new List <Instance> ();
+      Activities = new List <Activity> ();
     }
 
 
@@ -128,6 +133,7 @@ namespace ActivityTracker
     }
 
 
+    // Load user info from database based on user name.
     public bool LoadFromDatabase (DatabaseConnection database, string userName)
     {
       Int64 newID = 0;

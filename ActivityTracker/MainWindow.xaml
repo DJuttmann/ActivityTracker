@@ -22,8 +22,8 @@
                 <MenuItem x:Name="MenuQuit" Header="_Quit"/>
             </MenuItem>
             <MenuItem Header="_View">
-                <MenuItem x:Name="MenuInstances" Header="_User Activities"/>
-                <MenuItem x:Name="MenuActivities" Header="_Activity list"/>
+                <MenuItem x:Name="MenuInstances" Header="_User Activities" Click="MenuInstancesClick"/>
+                <MenuItem x:Name="MenuActivities" Header="_Activity list" Click="MenuActivitiesClick"/>
             </MenuItem>
             <MenuItem Header="_User">
                 <MenuItem x:Name="MenuLogin" Header="Log _in" Click="MenuLoginClick"/>
@@ -41,10 +41,10 @@
                 <SolidColorBrush Color="#FFA6CAED"/>
             </Grid.Background>
             <Label x:Name="ViewTitle" Content="&lt;TITLE&gt;" HorizontalAlignment="Left" Height="31" VerticalAlignment="Top" Width="129" FontSize="16"/>
-            <Button Content="Add" HorizontalAlignment="Left" Margin="148,5,0,0" VerticalAlignment="Top" Width="64"/>
-            <Button Content="Edit" HorizontalAlignment="Left" Margin="222,5,0,0" VerticalAlignment="Top" Width="64"/>
-            <Button Content="Delete" HorizontalAlignment="Left" Margin="296,5,0,0" VerticalAlignment="Top" Width="64"/>
-            <Button Content="Start Activity" HorizontalAlignment="Left" Margin="428,5,0,0" VerticalAlignment="Top" Width="86
+            <Button x:Name="AddButton" Content="Add" HorizontalAlignment="Left" Margin="148,5,0,0" VerticalAlignment="Top" Width="64" Click="AddButton_Click"/>
+            <Button x:Name="EditButton" Content="Edit" HorizontalAlignment="Left" Margin="222,5,0,0" VerticalAlignment="Top" Width="64" Click="EditButton_Click"/>
+            <Button x:Name="DeleteButton" Content="Delete" HorizontalAlignment="Left" Margin="296,5,0,0" VerticalAlignment="Top" Width="64" Click="DeleteButton_Click"/>
+            <Button x:Name="StartButton" Content="Start Activity" HorizontalAlignment="Left" Margin="428,5,0,0" VerticalAlignment="Top" Width="86
                     "/>
         </Grid>
 
@@ -55,7 +55,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- ACTIVITIES -->
-            <Border x:Name="ActivityView" Visibility="Hidden" BorderBrush="#000000" BorderThickness="1" Grid.Column="0">
+            <Border x:Name="ActivityView" Visibility="Visible" BorderBrush="#000000" BorderThickness="1" Grid.Column="0">
                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="30"/>
@@ -68,7 +68,9 @@
                         <Label Content="Available Activities" HorizontalAlignment="Left" Margin="5,2,0,0" VerticalAlignment="Top" Height="25" Width="107" Grid.Column="1"/>
                         <Label Content="Sort by" HorizontalAlignment="Left" HorizontalContentAlignment="Right" Height="25" Margin="198,2,0,0" VerticalAlignment="Top" Width="86"/>
                     </Grid>
-                    <ScrollViewer HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1"/>
+                    <ScrollViewer HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1">
+                        <StackPanel x:Name="ActivityList" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="Auto"/>
+                    </ScrollViewer>
                 </Grid>
             </Border>
 
@@ -97,9 +99,55 @@
                 </Grid>
             </Border>
 
+            <!-- NEW ACTIVITY -->
+            <Border x:Name="NewActivity" Visibility="Visible" BorderBrush="#000000" BorderThickness="1" Grid.Column="1">
+                <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="26"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0">
+                        <Grid.Background>
+                            <SolidColorBrush Color="#FFE0E0E0"/>
+                        </Grid.Background>
+                        <Label Content="New Activity" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    </Grid>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="25"/>
+                            <RowDefinition Height="25"/>
+                            <RowDefinition Height="25"/>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="25"/>
+                            <RowDefinition Height="25"/>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="25"/>
+                        </Grid.RowDefinitions>
+                        <Grid.Background>
+                            <SolidColorBrush Color="#FFF0F0F0"/>
+                        </Grid.Background>
+                        <Label Content="Name" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="86" Grid.Row="0"/>
+                        <TextBox x:Name="NewActivityName" HorizontalAlignment="Stretch" Height="19" Margin="6,0,6,0" TextWrapping="Wrap" VerticalAlignment="Top" TextChanged="TextBox_TextChanged" Grid.Row="1"/>
+                        <Label Content="Description" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="86" Margin="0,0,0,0" Grid.Row="2"/>
+                        <TextBox x:Name="NewActivityDescription" HorizontalAlignment="Stretch" Margin="6,0,6,0" TextWrapping="Wrap" AcceptsReturn="True" VerticalAlignment="Stretch" TextChanged="TextBox_TextChanged" Grid.Row="3"/>
+                        <Label Content="Tags" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="86" Margin="0,0,0,0" Grid.Row="4"/>
+                        <TextBox x:Name="NewActivityTagInput" HorizontalAlignment="Stretch" Height="19" Margin="6,0,6,0" TextWrapping="Wrap" VerticalAlignment="Top" TextChanged="TextBox_TextChanged" Grid.Row="5"/>
+                        <ListBox x:Name="NewActivityTags" HorizontalAlignment="Stretch" Margin="6,0,6,6" Grid.Row="6" VerticalAlignment="Stretch"/>
+                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="7">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Content="Create" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="6,0,6,0" Click="ButtonCeateActivity_Click"/>
+                            <Button Content="Cancel" HorizontalAlignment="Stretch" Margin="6,0,6,0" VerticalAlignment="Top" Grid.Column="1" Click="ButtonCancelActivity_Click"/>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
+
 
             <!-- INSTANCES -->
-            <Border x:Name="InstanceView" Visibility="Visible" BorderBrush="#000000" BorderThickness="1" Grid.Column="0">
+            <Border x:Name="InstanceView" Visibility="Hidden" BorderBrush="#000000" BorderThickness="1" Grid.Column="0">
                 <Grid Visibility="Visible" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="30"/>
@@ -117,7 +165,7 @@
             </Border>
 
             <!-- SELECT USER -->
-            <Border x:Name="SelectUser" Visibility="Visible" BorderBrush="#000000" BorderThickness="1" Grid.Column="1">
+            <Border x:Name="SelectUser" Visibility="Hidden" BorderBrush="#000000" BorderThickness="1" Grid.Column="1">
                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="26"/>
