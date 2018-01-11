@@ -87,6 +87,7 @@ namespace ActivityTracker
       ActivityView.Visibility = Visibility.Visible;
       FindActivity.Visibility = Visibility.Visible;
       NewActivity.Visibility = Visibility.Hidden;
+      EditActivity.Visibility = Visibility.Hidden;
       StartButton.Visibility = Visibility.Visible;
 
       InstanceView.Visibility = Visibility.Hidden;
@@ -94,6 +95,7 @@ namespace ActivityTracker
 
       SessionView.Visibility = Visibility.Hidden;
       NewSession.Visibility = Visibility.Hidden;
+      EditSession.Visibility = Visibility.Hidden;
 
       ViewTitle.Content = "Activity List";
       LoadActivityList ();
@@ -117,6 +119,7 @@ namespace ActivityTracker
       ActivityView.Visibility = Visibility.Hidden;
       FindActivity.Visibility = Visibility.Hidden;
       NewActivity.Visibility = Visibility.Hidden;
+      EditActivity.Visibility = Visibility.Hidden;
       StartButton.Visibility = Visibility.Hidden;
 
       InstanceView.Visibility = Visibility.Visible;
@@ -124,6 +127,7 @@ namespace ActivityTracker
 
       SessionView.Visibility = Visibility.Hidden;
       NewSession.Visibility = Visibility.Hidden;
+      EditSession.Visibility = Visibility.Hidden;
 
       ViewTitle.Content = "User Data";
       InstancesText.Content = "Activities for " + MainProject.SelectedUserName;
@@ -148,6 +152,7 @@ namespace ActivityTracker
       ActivityView.Visibility = Visibility.Hidden;
       FindActivity.Visibility = Visibility.Hidden;
       NewActivity.Visibility = Visibility.Hidden;
+      EditActivity.Visibility = Visibility.Hidden;
       StartButton.Visibility = Visibility.Hidden;
 
       InstanceView.Visibility = Visibility.Hidden;
@@ -155,6 +160,7 @@ namespace ActivityTracker
 
       SessionView.Visibility = Visibility.Visible;
       NewSession.Visibility = Visibility.Hidden;
+      EditSession.Visibility = Visibility.Hidden;
 
       ViewTitle.Content = "Session Log";
       SessionsText.Content = MainProject.SelectedActivityName + " - " + 
@@ -199,6 +205,30 @@ namespace ActivityTracker
     }
 
 
+    private void ShowEditActivity ()
+    {
+      if (ActiveView == View.Activities)
+      {
+        FindActivity.Visibility = Visibility.Hidden;
+        EditActivity.Visibility = Visibility.Visible;
+
+        NewActivityName.Text = MainProject.SelectedActivityName;
+        NewActivityDescription.Text = MainProject.SelectedActivityDescription;
+        NewActivityTagInput.Text = "";
+      }
+    }
+
+
+    private void HideEditActivity ()
+    {
+      if (ActiveView == View.Activities)
+      {
+        FindActivity.Visibility = Visibility.Visible;
+        EditActivity.Visibility = Visibility.Hidden;
+      }
+    }
+
+
     private void ShowNewSession ()
     {
       if (ActiveView == View.Sessions)
@@ -217,6 +247,28 @@ namespace ActivityTracker
       if (ActiveView == View.Sessions)
       {
         NewSession.Visibility = Visibility.Hidden;
+      }
+    }
+
+
+    private void ShowEditSession ()
+    {
+      if (ActiveView == View.Sessions)
+      {
+        EditSession.Visibility = Visibility.Visible;
+
+        EditSessionDate.Text = "";
+        EditSessionTimeSpent.Text = "";
+        EditSessionPercentFinished.Text = "";
+      }
+    }
+
+
+    private void HideEditSession ()
+    {
+      if (ActiveView == View.Sessions)
+      {
+        EditSession.Visibility = Visibility.Hidden;
       }
     }
 
@@ -384,6 +436,7 @@ namespace ActivityTracker
       switch (ActiveView)
       {
       case View.Activities:
+        ShowEditActivity ();
         break;
       case View.Instances:
         UIInstanceItem item = InstanceItems.Find (x => x.Selected);
@@ -391,6 +444,7 @@ namespace ActivityTracker
           ShowSessionView ();
         break;
       case View.Sessions:
+        ShowEditSession ();
         break;
       default:
         break;
@@ -441,6 +495,20 @@ namespace ActivityTracker
     }
 
 
+    private void ButtonSaveEditActivity_Click (object sender, RoutedEventArgs e)
+    {
+      // [wip] MainProject.EditActivity (
+      ShowActivityList ();
+      HideEditActivity ();
+    }
+
+
+    private void ButtonCancelEditActivity_Click (object sender, RoutedEventArgs e)
+    {
+      HideEditActivity ();
+    }
+
+
     private void ButtonCeateSession_Click (object sender, RoutedEventArgs e)
     {
       MainProject.CreateSession (new DateTime (2000, 1, 1), 
@@ -454,6 +522,18 @@ namespace ActivityTracker
     private void ButtonCancelSession_Click (object sender, RoutedEventArgs e)
     {
       HideNewSession ();
+    }
+
+    private void ButtonEditSaveSession_Click (object sender, RoutedEventArgs e)
+    {
+      // [wip] MainProject.EditSession (
+      ShowSessionList ();
+      HideEditSession ();
+    }
+
+    private void ButtonEditCancelSession_Click (object sender, RoutedEventArgs e)
+    {
+      HideEditSession ();
     }
   }
 }

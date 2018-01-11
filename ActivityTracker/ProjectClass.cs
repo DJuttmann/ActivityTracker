@@ -40,6 +40,13 @@ namespace ActivityTracker
       }
     }
 
+    public string SelectedActivityDescription
+    {
+      get
+      {
+        return SelectedActivity != null ? SelectedActivity.Description : "";
+      }
+    }
     
     // Constructor.
     public Project () {
