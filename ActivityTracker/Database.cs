@@ -324,6 +324,39 @@ namespace ActivityTracker
 
 //----------------------------------------------------------------------------------------
 // Instances
+
+    // Load all instances for a user.
+    public bool LoadUserInstances (Int64 userID, List <Instance> instances,
+                                      List <Activity> allActivities)
+    {
+      bool success = false;
+      SQLiteCommand command = new SQLiteCommand (Connection);
+      if (Open ())
+      {
+        instances.Clear ();
+        Instance newInstance = null;
+        Activity activity = null;
+        command.CommandText = "SELECT * FROM Instances WHERE UserID = " +
+                              userID.ToString ();
+
+        SQLiteDataReader Reader = command.ExecuteReader ();
+        while (Reader.Read ())
+        {
+          Int64 activityID = (Int64) Reader ["ActivityID"];
+          activity = allActivities.Find (x => x.ID == activityID);
+          if (activity != null)
+          {
+            newInstance = new Instance ((Int64) Reader ["InstanceID"], activity);
+            instances.Add (newInstance);
+          }
+        }
+        Reader.Close ();
+        success = true;
+        Close ();
+      }
+      return success;
+    }
+    
       
     // Add an instance to the database.
     public bool AddInstance (Int64 userID, Instance instance)
@@ -381,6 +414,35 @@ namespace ActivityTracker
 
 //----------------------------------------------------------------------------------------
 // Sessions
+
+    // Load all sessions for a instance. 
+    public bool LoadInstanceSessions (Int64 instanceID, List <Session> sessions)
+    {
+      bool success = false;
+      SQLiteCommand command = new SQLiteCommand (Connection);
+      if (Open ())
+      {
+        sessions.Clear ();
+        Session newSession = null;
+        command.CommandText = "SELECT * FROM Sessions WHERE InstanceID = " +
+                              instanceID.ToString ();
+
+        SQLiteDataReader Reader = command.ExecuteReader ();
+        while (Reader.Read ())
+        {
+          newSession = new Session (
+            (Int64) Reader ["SessionID"],
+            new DateTime (2000, 1, 1), // [wip] convert string to date? or change date type in database
+            (Int64) Reader ["TimeSpent"],
+            (Int64) Reader ["PercentFinished"]);
+          sessions.Add (newSession);
+        }
+        Reader.Close ();
+        success = true;
+        Close ();
+      }
+      return success;
+    }
       
     // Add a session to the database.
     public bool AddSession (Int64 instanceID, Session session)
@@ -390,7 +452,7 @@ namespace ActivityTracker
       if (Open ())
       {
         command.CommandText = "INSERT INTO Sessions " +
-          "(SessionID, InstanceID, ActivityID, Date, TimeSpent, PercentFinished) values (" +
+          "(SessionID, InstanceID, Date, TimeSpent, PercentFinished) values (" +
           session.ID.ToString () + ", " +
           instanceID.ToString () + ", '" +
           session.Date.ToString () + "', " +

@@ -36,7 +36,7 @@ namespace ActivityTracker
     private List <Tag> Tags;
     private List <Instance> Instances;
     private List <Activity> Activities;
-
+    public bool DataLoaded {get; private set;}
 
     // Constructor
     public User ()
@@ -49,6 +49,8 @@ namespace ActivityTracker
       Tags = new List <Tag> ();
       Instances = new List <Instance> ();
       Activities = new List <Activity> ();
+
+      DataLoaded = false;
     }
 
 
@@ -103,6 +105,22 @@ namespace ActivityTracker
     }
 
 
+    // Return instance with given index.
+    public Instance GetInstance (int index)
+    {
+      if (index < 0 || index >= Instances.Count)
+        return null;
+      return Instances [index];
+    }
+
+
+    // Return instance with given ID.
+    public Instance GetInstance (Int64 id)
+    {
+      return Instances.Find (x => x.ID == id);
+    }
+
+
     // Add an activity instance to the user.
     public void AddInstance (Instance instance)
     {
@@ -147,6 +165,23 @@ namespace ActivityTracker
         return true;
       }
       return false;
+    }
+
+
+    // Load user data (instances and sessions) from database.
+    public bool LoadDataFromDatabase (DatabaseConnection database,
+                                      List <Activity> allActivities)
+    {
+      DataLoaded = false;
+      if (!database.LoadUserInstances (ID, Instances, allActivities))
+        return false;
+      foreach (Instance instance in Instances)
+      {
+        if (!instance.LoadDataFromDatabase (database))
+          return false;
+      }
+      DataLoaded = true;
+      return true;
     }
 
   }
@@ -227,6 +262,15 @@ namespace ActivityTracker
     private Activity MyActivity;
     public Int64 ActivityID {get {return MyActivity.ID;}}
     private List <Session> Sessions;
+    public bool DataLoaded {get; private set;}
+
+    public string Name
+    {
+      get
+      {
+        return MyActivity.Name;
+      }
+    }
 
     public Int64 TimeSpent // Time in minutes;
     {
@@ -245,6 +289,8 @@ namespace ActivityTracker
     {
       get
       {
+        if (Sessions.Count == 0)
+          return 0;
         return Sessions [Sessions.Count - 1].PercentFinished;
       }
     }
@@ -255,6 +301,24 @@ namespace ActivityTracker
     {
       ID = id;
       MyActivity = act;
+      Sessions = new List <Session> ();
+      DataLoaded = false;
+    }
+
+
+    // Return session with given index.
+    public Session GetSession (int index)
+    {
+      if (index < 0 || index >= Sessions.Count)
+        return null;
+      return Sessions [index];
+    }
+
+
+    // Return session with given ID.
+    public Session GetSession (Int64 id)
+    {
+      return Sessions.Find (x => x.ID == id);
     }
 
 
@@ -275,6 +339,13 @@ namespace ActivityTracker
       if (a.Date > b.Date)
         return 1;
       return 0;
+    }
+
+
+    public bool LoadDataFromDatabase (DatabaseConnection database)
+    {
+      DataLoaded = database.LoadInstanceSessions (ID, Sessions);
+      return DataLoaded;
     }
   }
 

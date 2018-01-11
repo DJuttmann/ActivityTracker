@@ -24,8 +24,6 @@ namespace ActivityTracker
     DatabaseConnection Database;
     private string DatabaseFileName;
 
-
-
     public string SelectedUserName
     {
       get
@@ -145,7 +143,7 @@ namespace ActivityTracker
       if (Database.AddUser (newUser))
       {
         ActiveUser = newUser; // new user is logged in
-        SelectedUser = ActiveUser;
+        SelectUser (ActiveUser);
         return true;
       }
       return false;
@@ -168,7 +166,7 @@ namespace ActivityTracker
       if (true) // tempUser.PasswordHash == CreateHash (password))
       {
         ActiveUser = tempUser;
-        SelectedUser = ActiveUser;
+        SelectUser (ActiveUser);
         return true;
       }
       return false;
@@ -200,6 +198,24 @@ namespace ActivityTracker
       return false;
     }
 
+
+    // Select a user by ID.
+    public bool SelectUser (Int64 id)
+    {
+      return SelectUser (Users.Find (x => x.ID == id));
+    }
+
+
+    // Select a user.
+    private bool SelectUser (User newUser)
+    {
+      if (newUser == null)
+        return false;
+      SelectedUser = newUser;
+      if (!SelectedUser.DataLoaded)
+        SelectedUser.LoadDataFromDatabase (Database, Activities);
+      return true;
+    }
 
 //========================================================================================
 // Activity management
@@ -259,32 +275,72 @@ namespace ActivityTracker
 // Instance management
 
 
-    public bool CreateInstance (User user, Activity activity)
+    // Get instance for SelectedUser given index.
+    public Instance GetInstance (int index)
     {
-      Int64 id = Database.NewInstanceID ();
+      return SelectedUser.GetInstance (index);
+    }
 
+
+    // Create new instance for SelectedUser given activity index.
+    public bool CreateInstance (Int64 activityID)
+    {
+      Activity activity = Activities.Find (x => x.ID == activityID);
+      if (activity == null)
+        return false;
+
+      Int64 id = Database.NewInstanceID ();
       Instance newInstance = new Instance (id, activity);
-      if (Database.AddInstance (user.ID, newInstance))
+      if (Database.AddInstance (SelectedUser.ID, newInstance))
       {
-        user.AddInstance (newInstance);
+        SelectedUser.AddInstance (newInstance);
         return true;
       }
       return false;
     }
 
+
+    // Select an instance based on id.
+    public bool SelectInstance (Int64 id)
+    {
+      if (SelectedUser == null)
+        return false;
+      return SelectInstance (SelectedUser.GetInstance (id));
+    }
+
+
+    // Select an instance.
+    private bool SelectInstance (Instance newInstance)
+    {
+      if (newInstance == null)
+        return false;
+      SelectedInstance = newInstance;
+      if (!SelectedInstance.DataLoaded)
+        SelectedInstance.LoadDataFromDatabase (Database);
+      return true;
+    }
+
+
 //========================================================================================
 // Session management
 
 
-    public bool CreateSession (Instance instance, DateTime date, Int64 timeSpent, 
+    // Get session for SelectedUser given index.
+    public Session GetSession (int index)
+    {
+      return SelectedInstance.GetSession (index);
+    }
+
+
+    public bool CreateSession (DateTime date, Int64 timeSpent, 
                                Int64 percentFinished)
     {
       Int64 id = Database.NewSessionID ();
 
       Session newSession = new Session (id, date, timeSpent, percentFinished);
-      if (Database.AddSession (instance.ID, newSession))
+      if (Database.AddSession (SelectedInstance.ID, newSession))
       {
-        instance.AddSession (newSession);
+        SelectedInstance.AddSession (newSession);
         return true;
       }
       return false;
@@ -295,6 +351,7 @@ namespace ActivityTracker
 //    {
 //      if (Database.DeleteSession (session.ID))
 //    }
+
 
 //========================================================================================
 // Tag management
