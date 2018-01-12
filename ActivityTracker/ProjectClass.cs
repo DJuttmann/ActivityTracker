@@ -1,4 +1,10 @@
-﻿using System;
+﻿//========================================================================================
+// ActivityTracker by Daan Juttmann
+// Created: 2017-12-19
+// License: GNU General Public License 3.0 (https://www.gnu.org/licenses/gpl-3.0.en.html).
+//========================================================================================
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
@@ -21,6 +27,7 @@ namespace ActivityTracker
     private User SelectedUser; // The user whose data is being viewed.
     private Activity SelectedActivity;
     private Instance SelectedInstance;
+    private Session SelectedSession;
     DatabaseConnection Database;
     private string DatabaseFileName;
 
@@ -47,7 +54,34 @@ namespace ActivityTracker
         return SelectedActivity != null ? SelectedActivity.Description : "";
       }
     }
-    
+
+    public DateTime SelectedSessionDate
+    {
+      get
+      {
+        return SelectedSession != null ? SelectedSession.Date : new DateTime (2000, 1, 1);
+      }
+    }
+
+    public string SelectedSessionTimeSpent
+    {
+      get
+      {
+        return SelectedSession != null ?
+               SelectedSession.TimeSpent.ToString () : "";
+      }
+    }
+
+    public string SelectedSessionPercentFinished
+    {
+      get
+      {
+        return SelectedSession != null ?
+               SelectedSession.PercentFinished.ToString () : "";
+      }
+    }
+
+       
     // Constructor.
     public Project () {
       Users = new List <User> ();
@@ -57,6 +91,7 @@ namespace ActivityTracker
       SelectedUser = null;
       SelectedActivity = null;
       SelectedInstance = null;
+      SelectedSession = null;
       Database = null;
       DatabaseFileName = null;
     }
@@ -209,25 +244,40 @@ namespace ActivityTracker
     // Select a user by ID.
     public bool SelectUser (Int64 id)
     {
-      return SelectUser (Users.Find (x => x.ID == id));
+      User user = Users.Find (x => x.ID == id);
+      if (user == null)
+        return false;
+      SelectUser (user);
+      return true;
     }
 
 
-    // Select a user.
-    private bool SelectUser (User newUser)
+    // Select a user. May be set to null to select none.
+    private void SelectUser (User newUser)
     {
-      if (newUser == null)
-        return false;
       SelectedUser = newUser;
-      if (!SelectedUser.DataLoaded)
+      if (SelectedUser != null && !SelectedUser.DataLoaded)
         SelectedUser.LoadDataFromDatabase (Database, Activities);
-      return true;
+
+      // Selected instance must either belong to selected user, or be null.
+      if (SelectedUser == null || 
+          (SelectedInstance != null && !SelectInstance (SelectedInstance.ID)))
+        SelectInstance (null);
     }
 
 //========================================================================================
 // Activity management
 
    
+    // Get activity by index in list;
+    public Activity GetActivity (int index)
+    {
+      if (index < 0 || index >= Activities.Count)
+        return null;
+      return Activities [index];
+    }
+
+
     // Create new activity owned by SelectedUser.
     public bool CreateActivity (string name, string description)
     {
@@ -238,6 +288,45 @@ namespace ActivityTracker
       {
         Activities.Add (newActivity);
         SelectedUser.AddActivity (newActivity);
+        return true;
+      }
+      return false;
+    }
+
+
+    // Edit the selected Activity.
+    public bool EditActivity (string name, string description)
+    {
+      if (SelectedActivity == null)
+        return false;
+      Activity activity = Activities.Find (x => x.ID == SelectedActivity.ID);
+      if (activity == null)
+        return false;
+      Activity editActivity = new Activity (SelectedActivity.ID, activity.CreatorID,
+                                            name, description);
+
+      if (Database.UpdateActivity (editActivity))
+      {
+        activity.Name = name;
+        activity.Description = description;
+        return true;
+      }
+      return false;
+    }
+
+
+    // Delete the selected activity.
+    public bool DeleteActivity ()
+    {
+      if (SelectedActivity == null)
+        return false;
+      if (Database.DeleteActivity (SelectedActivity.ID))
+      {
+        Activities.Remove (SelectedActivity);
+        User Creator = Users.Find (x => x.ID == SelectedActivity.CreatorID);
+        if (Creator != null)
+          Creator.DeleteActivity (SelectedActivity);
+        SelectActivity (null);
         return true;
       }
       return false;
@@ -270,19 +359,28 @@ namespace ActivityTracker
     }
 
 
-    public Activity GetActivity (int index)
+    // Select a activity by ID.
+    public bool SelectActivity (Int64 id)
     {
-      if (index < 0 || index >= Activities.Count)
-        return null;
-      return Activities [index];
+      Activity activity = Activities.Find (x => x.ID == id);
+      if (activity == null)
+        return false;
+      SelectActivity (activity);
+      return true;
     }
 
+
+    // Select an activity. May be set to null to select none.
+    private void SelectActivity (Activity newActivity)
+    {
+      SelectedActivity = newActivity;
+    }
 
 //========================================================================================
 // Instance management
 
 
-    // Get instance for SelectedUser given index.
+    // Get instance for SelectedUser by index in list.
     public Instance GetInstance (int index)
     {
       return SelectedUser.GetInstance (index);
@@ -307,24 +405,47 @@ namespace ActivityTracker
     }
 
 
+    // Delete the selected instance.
+    public bool DeleteInstance ()
+    {
+      if (SelectedUser == null || SelectedInstance == null)
+        return false;
+
+      if (Database.DeleteInstance (SelectedInstance.ID))
+      {
+        SelectedUser.DeleteInstance (SelectedInstance.ID);
+        SelectInstance (null);
+        return true;
+      }
+      return false;
+    }
+
+
     // Select an instance based on id.
     public bool SelectInstance (Int64 id)
     {
       if (SelectedUser == null)
         return false;
-      return SelectInstance (SelectedUser.GetInstance (id));
+      Instance instance = SelectedUser.GetInstance (id);
+      if (instance == null)
+        return false;
+      SelectInstance (instance);
+
+      return true;
     }
 
 
-    // Select an instance.
-    private bool SelectInstance (Instance newInstance)
+    // Select an instance. May be set to null to select none.
+    private void SelectInstance (Instance newInstance)
     {
-      if (newInstance == null)
-        return false;
       SelectedInstance = newInstance;
-      if (!SelectedInstance.DataLoaded)
+      if (SelectedInstance != null && !SelectedInstance.DataLoaded)
         SelectedInstance.LoadDataFromDatabase (Database);
-      return true;
+
+      // Selected session must either belong to selected instance, or be null.
+      if (SelectedInstance == null || 
+          (SelectedSession != null && !SelectSession (SelectedSession.ID)))
+        SelectSession (null);
     }
 
 
@@ -332,7 +453,7 @@ namespace ActivityTracker
 // Session management
 
 
-    // Get session for SelectedUser given index.
+    // Get session for SelectedUser by index in list.
     public Session GetSession (int index)
     {
       return SelectedInstance.GetSession (index);
@@ -354,11 +475,62 @@ namespace ActivityTracker
     }
 
 
-//    public bool DeleteSession (Session session)
-//    {
-//      if (Database.DeleteSession (session.ID))
-//    }
+    // Edit selected session.
+    public bool EditSession (DateTime date, Int64 timeSpent, Int64 percentFinished)
+    {
+      if (SelectedSession == null)
+        return false;
+      Session session = SelectedInstance.GetSession (SelectedSession.ID);
+      if (session == null)
+        return false;
+      Session editSession = new Session (SelectedSession.ID, date, 
+                                         timeSpent, percentFinished);
 
+      if (Database.UpdateSession (editSession))
+      {
+        session.Date = date;
+        session.TimeSpent = timeSpent;
+        session.PercentFinished = percentFinished;
+        return true;
+      }
+      return false;
+    }
+
+
+    // Delete the selected session.
+    public bool DeleteSession ()
+    {
+      if (SelectedInstance == null || SelectedSession == null)
+        return false;
+
+      if (Database.DeleteSession (SelectedSession.ID))
+      {
+        SelectedInstance.DeleteSession (SelectedSession.ID);
+        SelectSession (null);
+        return true;
+      }
+      return false;
+    }
+
+
+    // Select a session by ID.
+    public bool SelectSession (Int64 id)
+    {
+      if (SelectedInstance == null)
+        return false;
+      Session session = SelectedInstance.GetSession (id);
+      if (session == null)
+        return false;
+      SelectSession (session);
+      return true;
+    }
+
+
+    // Select an activity. May be set to null to select none.
+    private void SelectSession (Session newSession)
+    {
+      SelectedSession = newSession;
+    }
 
 //========================================================================================
 // Tag management

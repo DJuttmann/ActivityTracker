@@ -1,4 +1,10 @@
-﻿using System;
+﻿//========================================================================================
+// ActivityTracker by Daan Juttmann
+// Created: 2017-12-19
+// License: GNU General Public License 3.0 (https://www.gnu.org/licenses/gpl-3.0.en.html).
+//========================================================================================
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,12 +22,20 @@ using System.Windows.Shapes;
 namespace ActivityTracker
 {
 
+  interface ISelectableUI
+  {
+    Int64 ID {get;}
+    bool Selected {get; set;}
+    UIElement Element {get;}
+  }
+
+
 //========================================================================================
 // Class UIActivityItem
 ﻿//========================================================================================
 
 
-  class UIActivityItem
+  class UIActivityItem: ISelectableUI
   {
     private MainWindow ParentWindow;
     public Int64 ID {get; private set;}
@@ -219,7 +233,7 @@ namespace ActivityTracker
 ﻿//========================================================================================
 
 
-  class UIInstanceItem
+  class UIInstanceItem: ISelectableUI
   {
     protected MainWindow ParentWindow;
     protected Int64 id;
@@ -355,7 +369,7 @@ namespace ActivityTracker
 ﻿//========================================================================================
 
  
-  class UISessionItem: UIInstanceItem
+  class UISessionItem: UIInstanceItem, ISelectableUI
   {
 
     public UISessionItem (MainWindow parentWindow, Int64 id, string title,

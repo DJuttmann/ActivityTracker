@@ -99,7 +99,7 @@ namespace ActivityTracker
 
 
     // Remove an activity from the user.
-    public void RemoveActivity (Activity deleteActivity)
+    public void DeleteActivity (Activity deleteActivity)
     {
       Activities.Remove (deleteActivity);
     }
@@ -136,6 +136,13 @@ namespace ActivityTracker
       {
         Instances.RemoveAt (index);
       }
+    }
+
+
+    // Delete a user's activity instance by id.
+    public void DeleteInstance (Int64 id)
+    {
+      Instances.RemoveAll (x => x.ID == id);
     }
 
 
@@ -196,8 +203,8 @@ namespace ActivityTracker
   {
     public Int64 ID {get; private set;}
     public Int64 CreatorID {get; private set;}
-    public string Name {get; private set;}
-    public string Description {get; private set;}
+    public string Name {get; set;}
+    public string Description {get; set;}
     private List <Tag> Tags;
 
 
@@ -332,6 +339,12 @@ namespace ActivityTracker
     }
 
 
+    public void DeleteSession (Int64 id)
+    {
+      Sessions.RemoveAll (x => x.ID == id);
+    }
+
+
     private static int CompareDates (Session a, Session b)
     {
       if (a.Date < b.Date)
@@ -357,9 +370,9 @@ namespace ActivityTracker
   public class Session
   {
     public Int64 ID {get; private set;}
-    public DateTime Date {get; private set;}
-    public Int64 TimeSpent {get; private set;}
-    public Int64 PercentFinished {get; private set;}
+    public DateTime Date {get; set;}
+    public Int64 TimeSpent {get; set;}
+    public Int64 PercentFinished {get; set;}
 
 
     public Session (Int64 id, DateTime date, Int64 timeSpent, Int64 percentFinished)

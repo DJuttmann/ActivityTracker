@@ -1,4 +1,10 @@
-﻿using System;
+﻿//========================================================================================
+// ActivityTracker by Daan Juttmann
+// Created: 2017-12-19
+// License: GNU General Public License 3.0 (https://www.gnu.org/licenses/gpl-3.0.en.html).
+//========================================================================================
+
+using System;
 using System.Collections.Generic;
 //using System.Linq;
 using System.Text;
@@ -150,6 +156,40 @@ namespace ActivityTracker
       return DateTime.Now.Ticks;
     }
 
+
+    private static string DateToString (DateTime d)
+    {
+      return d.Year.ToString () + "-" + 
+             d.Month.ToString () + "-" +
+             d.Day.ToString ();
+    }
+
+
+    private static DateTime StringToDate (string s)
+    {
+      int year = 2000;
+      int month = 1;
+      int day = 1;
+      string [] split = s.Split (new [] {'-'});
+      if (split.Length == 3)
+      {
+        try
+        {
+          year = Convert.ToInt32 (split [0]);
+          month = Convert.ToInt32 (split [1]);
+          day = Convert.ToInt32 (split [2]);
+        }
+        catch
+        {
+          // Incorrect string format found.
+          year = 1999;
+          month = 12;
+          day = 31;
+        }
+      }
+       return new DateTime (year, month, day);
+    }
+
 //----------------------------------------------------------------------------------------
 // Users
 
@@ -224,7 +264,7 @@ namespace ActivityTracker
           "UserName = " + user.Name +
           ", PasswordHash = " + user.PasswordHash +
           ", UserType = " + user.Type.ToString () +
-          "WHERE UserID = " + user.ID.ToString (); 
+          " WHERE UserID = " + user.ID.ToString (); 
         success = command.ExecuteNonQuery () == 1;
         Close ();
       }
@@ -245,29 +285,29 @@ namespace ActivityTracker
         Activity newActivity = null;
         command.CommandText = "SELECT * FROM Activities";
 
-        SQLiteDataReader ActivityReader = command.ExecuteReader ();
-        while (ActivityReader.Read ())
+        SQLiteDataReader activityReader = command.ExecuteReader ();
+        while (activityReader.Read ())
         {
           newActivity = new Activity (
-            (Int64) ActivityReader ["ActivityID"], 
-            (Int64) ActivityReader ["CreatorID"],
-            (string) ActivityReader ["ActName"],
-            (string) ActivityReader ["Description"]);
+            (Int64) activityReader ["ActivityID"], 
+            (Int64) activityReader ["CreatorID"],
+            (string) activityReader ["ActName"],
+            (string) activityReader ["Description"]);
           activities.Add (newActivity);
         }
-        ActivityReader.Close ();
+        activityReader.Close ();
 
-        SQLiteDataReader TagReader;
+        SQLiteDataReader tagReader;
         foreach (Activity activity in activities)
         {
           command.CommandText = "SELECT * FROM ActivityTags WHERE ActID = " +
                                 activity.ID.ToString ();
-          TagReader = command.ExecuteReader ();
-          while (TagReader.Read ())
+          tagReader = command.ExecuteReader ();
+          while (tagReader.Read ())
           {
-            activity.AddTag ((Int64) TagReader ["TagID"], allTags);
+            activity.AddTag ((Int64) tagReader ["TagID"], allTags);
           }
-          TagReader.Close ();
+          tagReader.Close ();
         }
         success = true;
         Close ();
@@ -305,9 +345,9 @@ namespace ActivityTracker
       {
         command.CommandText = "UPDATE Activities SET " +
           "CreatorID = " + activity.CreatorID +
-          ", ActName = " + activity.Name +
-          ", Description = " + activity.Description +
-          "WHERE ActivityID = " + activity.ID.ToString (); 
+          ", ActName = '" + activity.Name +
+          "', Description = '" + activity.Description +
+          "' WHERE ActivityID = " + activity.ID.ToString (); 
         success = command.ExecuteNonQuery () == 1;
         Close ();
       }
@@ -316,10 +356,28 @@ namespace ActivityTracker
 
 
     // Remove activity from Database ()
-    public bool DeleteActivity (Activity activity)
+    public bool DeleteActivity (Int64 activityID)
     {
       // [wip]
-      return false;
+
+
+      bool success = false;
+      SQLiteCommand command = new SQLiteCommand (Connection);
+      if (Open ())
+      {
+        command.CommandText = "SELECT * FROM Instances WHERE ActivityID = " +
+                              activityID.ToString ();
+        SQLiteDataReader reader = command.ExecuteReader ();
+        if (reader.Read ())
+          return false; // at least one instance exists for activity: cannot delete
+        reader.Close ();
+
+        command.CommandText = "DELETE FROM Activities WHERE ActivityID = " +
+                              activityID.ToString ();
+        success = command.ExecuteNonQuery () > 0;
+        Close ();
+      }
+      return success;
     }
 
 //----------------------------------------------------------------------------------------
@@ -339,18 +397,18 @@ namespace ActivityTracker
         command.CommandText = "SELECT * FROM Instances WHERE UserID = " +
                               userID.ToString ();
 
-        SQLiteDataReader Reader = command.ExecuteReader ();
-        while (Reader.Read ())
+        SQLiteDataReader reader = command.ExecuteReader ();
+        while (reader.Read ())
         {
-          Int64 activityID = (Int64) Reader ["ActivityID"];
+          Int64 activityID = (Int64) reader ["ActivityID"];
           activity = allActivities.Find (x => x.ID == activityID);
           if (activity != null)
           {
-            newInstance = new Instance ((Int64) Reader ["InstanceID"], activity);
+            newInstance = new Instance ((Int64) reader ["InstanceID"], activity);
             instances.Add (newInstance);
           }
         }
-        Reader.Close ();
+        reader.Close ();
         success = true;
         Close ();
       }
@@ -389,7 +447,7 @@ namespace ActivityTracker
         command.CommandText = "UPDATE Instances SET " +
           "TimeSpent = " + instance.TimeSpent.ToString () +
           ", PercentFinished = " + instance.PercentFinished.ToString () +
-          "WHERE InstanceID = " + instance.ID.ToString (); 
+          " WHERE InstanceID = " + instance.ID.ToString (); 
         success = command.ExecuteNonQuery () == 1;
         Close ();
       }
@@ -404,9 +462,12 @@ namespace ActivityTracker
       SQLiteCommand command = new SQLiteCommand (Connection);
       if (Open ())
       {
-        command.CommandText = "DELETE FROM Instances WHERE " +
-          "InstanceID = " + instanceID.ToString ();
-        success = command.ExecuteNonQuery () == 1;
+        List <Int64> sessionIDs = new List <Int64> ();
+        command.CommandText = "DELETE FROM Sessions WHERE InstanceID = " +
+                              instanceID.ToString () +
+                              "; DELETE FROM Instances WHERE InstanceID = " +
+                              instanceID.ToString ();
+        success = command.ExecuteNonQuery () > 0;
         Close ();
       }
       return success;
@@ -427,17 +488,17 @@ namespace ActivityTracker
         command.CommandText = "SELECT * FROM Sessions WHERE InstanceID = " +
                               instanceID.ToString ();
 
-        SQLiteDataReader Reader = command.ExecuteReader ();
-        while (Reader.Read ())
+        SQLiteDataReader reader = command.ExecuteReader ();
+        while (reader.Read ())
         {
           newSession = new Session (
-            (Int64) Reader ["SessionID"],
-            new DateTime (2000, 1, 1), // [wip] convert string to date? or change date type in database
-            (Int64) Reader ["TimeSpent"],
-            (Int64) Reader ["PercentFinished"]);
+            (Int64) reader ["SessionID"],
+            StringToDate ((string) reader ["Date"]),
+            (Int64) reader ["TimeSpent"],
+            (Int64) reader ["PercentFinished"]);
           sessions.Add (newSession);
         }
-        Reader.Close ();
+        reader.Close ();
         success = true;
         Close ();
       }
@@ -455,7 +516,7 @@ namespace ActivityTracker
           "(SessionID, InstanceID, Date, TimeSpent, PercentFinished) values (" +
           session.ID.ToString () + ", " +
           instanceID.ToString () + ", '" +
-          session.Date.ToString () + "', " +
+          DateToString (session.Date) + "', " +
           session.TimeSpent.ToString () + ", " +
           session.PercentFinished.ToString () + ")";
         success = command.ExecuteNonQuery () == 1;
@@ -473,10 +534,10 @@ namespace ActivityTracker
       if (Open ())
       {
         command.CommandText = "UPDATE Sessions SET " +
-          "Date = '" + session.Date.ToString () +
+          "Date = '" + DateToString (session.Date) +
           "', TimeSpent = " + session.TimeSpent.ToString () +
           ", PercentFinished = " + session.PercentFinished.ToString () +
-          "WHERE SessionID = " + session.ID.ToString (); 
+          " WHERE SessionID = " + session.ID.ToString (); 
         success = command.ExecuteNonQuery () == 1;
         Close ();
       }
@@ -493,7 +554,7 @@ namespace ActivityTracker
       {
         command.CommandText = "DELETE FROM Sessions WHERE " +
           "SessionID = " + sessionID.ToString ();
-        success = command.ExecuteNonQuery () == 1;
+        success = command.ExecuteNonQuery () > 0;
         Close ();
       }
       return success;
@@ -512,12 +573,12 @@ namespace ActivityTracker
         tags.Clear ();
         Tag newTag = null;
         command.CommandText = "SELECT * FROM Tags";
-        SQLiteDataReader Reader = command.ExecuteReader ();
-        while (Reader.Read ())
+        SQLiteDataReader reader = command.ExecuteReader ();
+        while (reader.Read ())
         {
           newTag = new Tag (
-            (Int64) Reader ["TagID"], 
-            (string) Reader ["Name"]);
+            (Int64) reader ["TagID"], 
+            (string) reader ["Name"]);
           tags.Add (newTag);
         }
         success = true;

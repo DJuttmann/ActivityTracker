@@ -1,4 +1,10 @@
-﻿using System;
+﻿//========================================================================================
+// ActivityTracker by Daan Juttmann
+// Created: 2017-12-19
+// License: GNU General Public License 3.0 (https://www.gnu.org/licenses/gpl-3.0.en.html).
+//========================================================================================
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -30,9 +36,9 @@ namespace ActivityTracker
   public partial class MainWindow: Window
   {
     private Project MainProject;
-    private List <UIActivityItem> ActivityItems;
-    private List <UIInstanceItem> InstanceItems;
-    private List <UISessionItem> SessionItems;
+    private List <ISelectableUI> ActivityItems;
+    private List <ISelectableUI> InstanceItems;
+    private List <ISelectableUI> SessionItems;
     private View ActiveView;
 
     // Constructor.
@@ -42,9 +48,9 @@ namespace ActivityTracker
 
       MainProject = new Project ();
       MainProject.LoadDatabase ("ActivityDatabase.sqlite");
-      ActivityItems = new List <UIActivityItem> ();
-      InstanceItems = new List <UIInstanceItem> ();
-      SessionItems = new List <UISessionItem> ();
+      ActivityItems = new List <ISelectableUI> ();
+      InstanceItems = new List <ISelectableUI> ();
+      SessionItems = new List <ISelectableUI> ();
       ShowNoView ();
 
       // [wip] Login admin -- for testing purposes, remove later.
@@ -56,7 +62,7 @@ namespace ActivityTracker
     // Loads the window for user after logging in.
     private void LoginSetup ()
     {
-      ShowActivityView ();
+      ShowInstanceView ();
     }
 
 ﻿//========================================================================================
@@ -187,6 +193,7 @@ namespace ActivityTracker
       {
         FindActivity.Visibility = Visibility.Hidden;
         NewActivity.Visibility = Visibility.Visible;
+        EditActivity.Visibility = Visibility.Hidden;
 
         NewActivityName.Text = "";
         NewActivityDescription.Text = "";
@@ -210,11 +217,12 @@ namespace ActivityTracker
       if (ActiveView == View.Activities)
       {
         FindActivity.Visibility = Visibility.Hidden;
+        NewActivity.Visibility = Visibility.Hidden;
         EditActivity.Visibility = Visibility.Visible;
 
-        NewActivityName.Text = MainProject.SelectedActivityName;
-        NewActivityDescription.Text = MainProject.SelectedActivityDescription;
-        NewActivityTagInput.Text = "";
+        EditActivityName.Text = MainProject.SelectedActivityName;
+        EditActivityDescription.Text = MainProject.SelectedActivityDescription;
+        EditActivityTagInput.Text = "";
       }
     }
 
@@ -234,8 +242,11 @@ namespace ActivityTracker
       if (ActiveView == View.Sessions)
       {
         NewSession.Visibility = Visibility.Visible;
+        EditSession.Visibility = Visibility.Hidden;
 
-        NewSessionDate.Text = "";
+        NewSessionYear.Text = "";
+        NewSessionMonth.Text = "";
+        NewSessionDay.Text = "";
         NewSessionTimeSpent.Text = "";
         NewSessionPercentFinished.Text = "";
       }
@@ -255,11 +266,14 @@ namespace ActivityTracker
     {
       if (ActiveView == View.Sessions)
       {
+        NewSession.Visibility = Visibility.Hidden;
         EditSession.Visibility = Visibility.Visible;
 
-        EditSessionDate.Text = "";
-        EditSessionTimeSpent.Text = "";
-        EditSessionPercentFinished.Text = "";
+        EditSessionYear.Text = MainProject.SelectedSessionDate.Year.ToString ();
+        EditSessionMonth.Text = MainProject.SelectedSessionDate.Month.ToString ();
+        EditSessionDay.Text = MainProject.SelectedSessionDate.Day.ToString ();
+        EditSessionTimeSpent.Text = MainProject.SelectedSessionTimeSpent;
+        EditSessionPercentFinished.Text = MainProject.SelectedSessionPercentFinished;
       }
     }
 
@@ -294,6 +308,21 @@ namespace ActivityTracker
     }
 
 
+    // Reloads the activities in the list.
+    private void UpdateActivityList ()
+    {
+      for (int i = 0; i < ActivityItems.Count; i++)
+      {
+        Activity activity = MainProject.GetActivity (i);
+        if (activity == null)
+          break;
+        ((UIActivityItem) ActivityItems [i]).Title = activity.Name;
+        ((UIActivityItem) ActivityItems [i]).Creator = "Unknown";
+        ((UIActivityItem) ActivityItems [i]).Description = activity.Description;
+      }
+    }
+
+
     // Select none of the activities.
     public void ActivitiesSelectNone ()
     {
@@ -319,6 +348,21 @@ namespace ActivityTracker
         InstanceItems.Add (item);
         i++;
         instance = MainProject.GetInstance (i);
+      }
+    }
+
+
+    // Reloads the instances in the list.
+    private void UpdateInstanceList ()
+    {
+      for (int i = 0; i < InstanceItems.Count; i++)
+      {
+        Instance instance = MainProject.GetInstance (i);
+        if (instance == null)
+          break;
+        ((UIInstanceItem) InstanceItems [i]).Title = instance.Name;
+        ((UIInstanceItem) InstanceItems [i]).Duration = instance.TimeSpent;
+        ((UIInstanceItem) InstanceItems [i]).Percentage = instance.PercentFinished;
       }
     }
 
@@ -352,6 +396,21 @@ namespace ActivityTracker
     }
 
 
+    // Reloads the sessions in the list.
+    private void UpdateSessionList ()
+    {
+      for (int i = 0; i < SessionItems.Count; i++)
+      {
+        Session session = MainProject.GetSession (i);
+        if (session == null)
+          break;
+        ((UIInstanceItem) SessionItems [i]).Title = session.Date.ToShortDateString ();
+        ((UIInstanceItem) SessionItems [i]).Duration = session.TimeSpent;
+        ((UIInstanceItem) SessionItems [i]).Percentage = session.PercentFinished;
+      }
+    }
+
+
     // Select none of the sessions.
     public void SessionsSelectNone ()
     {
@@ -359,6 +418,23 @@ namespace ActivityTracker
         instance.Selected = false;
     }
 
+
+﻿//========================================================================================
+// Misc
+
+
+    // Returns a list of indices of the selected items in a selectable UI element list.
+    List <int> GetSelectedElements (List <ISelectableUI> elements)
+    {
+      var selected = new List <int> ();
+      for (int i = 0; i < elements.Count; i++)
+      {
+        if (elements [i].Selected)
+          selected.Add (i);
+      }
+      return selected;
+    }
+    
 
 ﻿//========================================================================================
 // Event handlers
@@ -370,9 +446,8 @@ namespace ActivityTracker
       var register = new RegisterWindow ();
       register.MyProject = MainProject;
       bool? success = register.ShowDialog ();
-      if (success is bool s)
-        if (s)
-          LoginSetup ();
+      if (success is bool s && s)
+        LoginSetup ();
     }
 
 
@@ -382,9 +457,8 @@ namespace ActivityTracker
       var login = new LoginWindow ();
       login.MyProject = MainProject;
       bool? success = login.ShowDialog ();
-      if (success is bool s)
-        if (s)
-          LoginSetup ();
+      if (success is bool s && s)
+        LoginSetup ();
     }
 
 
@@ -433,18 +507,26 @@ namespace ActivityTracker
 
     private void EditButton_Click (object sender, RoutedEventArgs e)
     {
+      List <int> selected;
       switch (ActiveView)
       {
       case View.Activities:
-        ShowEditActivity ();
+        selected = GetSelectedElements ((List <ISelectableUI>) ActivityItems);
+        if (selected.Count == 1 && 
+            MainProject.SelectActivity (ActivityItems [selected [0]].ID))
+          ShowEditActivity ();
         break;
       case View.Instances:
-        UIInstanceItem item = InstanceItems.Find (x => x.Selected);
-        if (item != null && MainProject.SelectInstance (item.ID))
+        selected = GetSelectedElements ((List <ISelectableUI>) InstanceItems);
+        if (selected.Count == 1 && 
+            MainProject.SelectInstance (InstanceItems [selected [0]].ID))
           ShowSessionView ();
         break;
       case View.Sessions:
-        ShowEditSession ();
+        selected = GetSelectedElements ((List <ISelectableUI>) SessionItems);
+        if (selected.Count == 1 && 
+            MainProject.SelectSession (SessionItems [selected [0]].ID))
+          ShowEditSession ();
         break;
       default:
         break;
@@ -452,16 +534,54 @@ namespace ActivityTracker
     }
 
 
+    private bool ConfirmDelete ()
+    {
+      return MessageBox.Show ("Delete selected items?", "Warning", 
+                              MessageBoxButton.YesNo, MessageBoxImage.Warning) == 
+                              MessageBoxResult.Yes;
+    }
+
+
     private void DeleteButton_Click (object sender, RoutedEventArgs e)
     {
+      if (!ConfirmDelete ())
+        return;
+
       switch (ActiveView)
       {
       case View.Activities:
+        foreach (var item in ActivityItems)
+          if (item.Selected)
+          {
+            MainProject.SelectActivity (item.ID);
+            MainProject.DeleteActivity ();
+          }
+        LoadActivityList ();
+        ShowActivityList ();
         break;
+
       case View.Instances:
+        foreach (var item in InstanceItems)
+          if (item.Selected)
+          {
+            MainProject.SelectInstance (item.ID);
+            MainProject.DeleteInstance ();
+          }
+        LoadInstanceList ();
+        ShowInstanceList ();
         break;
+
       case View.Sessions:
+        foreach (var item in SessionItems)
+          if (item.Selected)
+          {
+            MainProject.SelectSession (item.ID);
+            MainProject.DeleteSession ();
+          }
+        LoadSessionList ();
+        ShowSessionList ();
         break;
+
       default:
         break;
       }
@@ -484,6 +604,7 @@ namespace ActivityTracker
     private void ButtonCeateActivity_Click (object sender, RoutedEventArgs e)
     {
       MainProject.CreateActivity (NewActivityName.Text, NewActivityDescription.Text);
+      LoadActivityList ();
       ShowActivityList ();
       HideNewActivity ();
     }
@@ -497,7 +618,9 @@ namespace ActivityTracker
 
     private void ButtonSaveEditActivity_Click (object sender, RoutedEventArgs e)
     {
-      // [wip] MainProject.EditActivity (
+      MainProject.EditActivity (EditActivityName.Text,
+                                EditActivityDescription.Text);
+      UpdateActivityList ();
       ShowActivityList ();
       HideEditActivity ();
     }
@@ -511,9 +634,14 @@ namespace ActivityTracker
 
     private void ButtonCeateSession_Click (object sender, RoutedEventArgs e)
     {
-      MainProject.CreateSession (new DateTime (2000, 1, 1), 
-                                 Convert.ToInt64 (NewSessionTimeSpent.Text),
-                                 Convert.ToInt64 (NewSessionPercentFinished.Text));
+      int Year = Convert.ToInt32 (NewSessionYear.Text);
+      int Month = Convert.ToInt32 (NewSessionMonth.Text);
+      int Day = Convert.ToInt32 (NewSessionDay.Text);
+      DateTime date = new DateTime (Year, Month, Day);
+      Int64 timeSpent = Convert.ToInt64 (NewSessionTimeSpent.Text);
+      Int64 percentFinished = Convert.ToInt64 (NewSessionPercentFinished.Text);
+      MainProject.CreateSession (date, timeSpent, percentFinished);
+      LoadSessionList ();
       ShowSessionList ();
       HideNewSession ();
     }
@@ -524,12 +652,21 @@ namespace ActivityTracker
       HideNewSession ();
     }
 
+
     private void ButtonEditSaveSession_Click (object sender, RoutedEventArgs e)
     {
-      // [wip] MainProject.EditSession (
+      int Year = Convert.ToInt32 (EditSessionYear.Text);
+      int Month = Convert.ToInt32 (EditSessionMonth.Text);
+      int Day = Convert.ToInt32 (EditSessionDay.Text);
+      DateTime date = new DateTime (Year, Month, Day);
+      Int64 timeSpent = Convert.ToInt64 (EditSessionTimeSpent.Text);
+      Int64 percentFinished = Convert.ToInt64 (EditSessionPercentFinished.Text);
+      MainProject.EditSession (date, timeSpent, percentFinished);
+      UpdateSessionList ();
       ShowSessionList ();
       HideEditSession ();
     }
+
 
     private void ButtonEditCancelSession_Click (object sender, RoutedEventArgs e)
     {
