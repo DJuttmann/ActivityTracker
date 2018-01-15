@@ -17,6 +17,7 @@ namespace ActivityTracker
 
   public enum UserType
   {
+    None,
     Student,
     Teacher
   }
@@ -37,6 +38,18 @@ namespace ActivityTracker
     private List <Instance> Instances;
     private List <Activity> Activities;
     public bool DataLoaded {get; private set;}
+
+    public List <string> TagNames
+    {
+      get
+      {
+        var tagList = new List <string> ();
+        foreach (Tag t in Tags)
+          tagList.Add (t.Name);
+        return tagList;
+      }
+    }
+
 
     // Constructor
     public User ()
@@ -75,11 +88,32 @@ namespace ActivityTracker
     }
 
 
+    // Chect if activity has a tag containing string s.
+    public bool HasTagWithText (string s)
+    {
+      if (s == String.Empty)
+        return true;
+      foreach (string tagName in TagNames)
+        if (tagName.ToLower ().Contains (s))
+          return true;
+      return false;
+    }
+
+
     // Add a new tag to the user.
     public void AddTag (Tag newTag)
     {
       if (!Tags.Contains (newTag))
         Tags.Add (newTag);
+    }
+
+
+    // Add tag to the Activity based on ID and list of all tags.
+    public void AddTag (Int64 tagID, List <Tag> allTags)
+    {
+      Tag newTag = allTags.Find (x => x.ID == tagID);
+      if (newTag != null)
+        AddTag (newTag);
     }
 
 
@@ -206,6 +240,7 @@ namespace ActivityTracker
     public string Name {get; set;}
     public string Description {get; set;}
     private List <Tag> tags;
+    public string CreatorName {get; private set;}
 
     public List <string> TagNames
     {
@@ -227,6 +262,7 @@ namespace ActivityTracker
       Name = name;
       Description = description;
       tags = new List <Tag> ();
+      CreatorName = "unknown";
     }
 
 
@@ -234,6 +270,18 @@ namespace ActivityTracker
     public bool HasTag (Tag tag)
     {
       return tags.Any (x => x.Equals (tag));
+    }
+
+
+    // Chect if activity has a tag containing string s.
+    public bool HasTagWithText (string s)
+    {
+      if (s == String.Empty)
+        return true;
+      foreach (string tagName in TagNames)
+        if (tagName.ToLower ().Contains (s))
+          return true;
+      return false;
     }
 
 

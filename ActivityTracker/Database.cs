@@ -207,6 +207,48 @@ namespace ActivityTracker
     }
 
 
+    // Load all activities from database to list. List allTags must already be filled.
+    public bool LoadAllUsers (List <User> users, List <Tag> allTags)
+    {
+      bool success = false;
+      SQLiteCommand command = new SQLiteCommand (Connection);
+      if (Open ())
+      {
+        users.Clear ();
+        User newUser = null;
+        command.CommandText = "SELECT * FROM Users";
+
+        SQLiteDataReader activityReader = command.ExecuteReader ();
+        while (activityReader.Read ())
+        {
+          newUser = new User (
+            (Int64) activityReader ["UserID"], 
+            (string) activityReader ["UserName"],
+            (string) activityReader ["PasswordHash"],
+            StringToUserType ((string) activityReader ["UserType"]));
+          users.Add (newUser);
+        }
+        activityReader.Close ();
+
+        SQLiteDataReader tagReader;
+        foreach (User user in users)
+        {
+          command.CommandText = "SELECT * FROM UserTags WHERE UserID = " +
+                                user.ID.ToString ();
+          tagReader = command.ExecuteReader ();
+          while (tagReader.Read ())
+          {
+            user.AddTag ((Int64) tagReader ["TagID"], allTags);
+          }
+          tagReader.Close ();
+        }
+        success = true;
+        Close ();
+      }
+      return success;
+    }
+
+
     // Load
     public bool LoadUser (string userName, ref Int64 userID, ref string passwordHash,
                           ref UserType type)
@@ -281,7 +323,7 @@ namespace ActivityTracker
 //----------------------------------------------------------------------------------------
 // Activities
 
-    // Save all activities from database in list. List allTags must already be filled.
+    // Load all activities from database to list. List allTags must already be filled.
     public bool LoadAllActivities (List <Activity> activities, List <Tag> allTags)
     {
       bool success = false;

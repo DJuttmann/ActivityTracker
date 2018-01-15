@@ -35,11 +35,17 @@ namespace ActivityTracker
   /// </summary>
   public partial class MainWindow: Window
   {
+    private const string FilterModeName = "name";
+    private const string FilterModeCreator = "creator";
+    private const string FilterModeTag = "tag";
+
     private Project MainProject;
     private List <ISelectableUI> ActivityItems;
     private List <ISelectableUI> InstanceItems;
     private List <ISelectableUI> SessionItems;
+    private List <Int64> UserIDs; // list of IDs for currently visible users
     private View ActiveView;
+
 
     private readonly SolidColorBrush InvalidInput = 
       new SolidColorBrush (Color.FromArgb (0xFF, 0xFF, 0xA0, 0xA0));
@@ -56,6 +62,8 @@ namespace ActivityTracker
       ActivityItems = new List <ISelectableUI> ();
       InstanceItems = new List <ISelectableUI> ();
       SessionItems = new List <ISelectableUI> ();
+      UserIDs = new List <Int64> ();
+      UISetup ();
       ShowNoView ();
 
       // [wip] Login admin -- for testing purposes, remove later.
@@ -64,11 +72,28 @@ namespace ActivityTracker
     }
 
 
+    private void UISetup ()
+    {
+      ActivityFilterMode.Items.Add (FilterModeName);
+      ActivityFilterMode.Items.Add (FilterModeCreator);
+      ActivityFilterMode.Items.Add (FilterModeTag);
+      UserFilterMode.Items.Add (FilterModeName);
+      UserFilterMode.Items.Add (FilterModeTag);
+    }
+
+
     // Loads the window for user after logging in.
     private void LoginSetup ()
     {
       ShowInstanceView ();
+
+      UserSearchBox.Text = "";
+      if (MainProject.ActiveUserType == UserType.Student)
+        SelectUser.IsEnabled = true; // [wip] change this to false.
+      else
+        SelectUser.IsEnabled = true;
     }
+
 
 ﻿//========================================================================================
 // Manage visibility of UI elements
@@ -111,7 +136,6 @@ namespace ActivityTracker
 
       ViewTitle.Content = "Activity List";
       LoadActivityList ();
-      ShowActivityList ();
       ActiveView = View.Activities;
     }
 
@@ -142,9 +166,9 @@ namespace ActivityTracker
       EditSession.Visibility = Visibility.Hidden;
 
       ViewTitle.Content = "User Data";
-      InstancesText.Content = "Activities for " + MainProject.SelectedUserName;
       LoadInstanceList ();
-      ShowInstanceList ();
+//      if (MainProject.ActiveUserType == UserType.Teacher) // [wip] uncomment this line.
+        LoadUserList ();
       ActiveView = View.Instances;
     }
 
@@ -179,7 +203,6 @@ namespace ActivityTracker
                              MainProject.SelectedUserName +
                              "'s sessions";
       LoadSessionList ();
-      ShowSessionList ();
       ActiveView = View.Sessions;
     }
 
@@ -315,12 +338,35 @@ namespace ActivityTracker
       Activity activity = MainProject.GetActivity (i);
       while (activity != null)
       {
-        var item = new UIActivityItem (this, activity.ID, activity.Name,
-                                       "Unknown", activity.Description);
-        ActivityItems.Add (item);
+        bool show = false;
+        switch (ActivityFilterMode.Text)
+        {
+        case FilterModeName:
+          if (activity.Name.ToLower ().Contains (ActivitySearchBox.Text.ToLower ()))
+            show = true;
+          break;
+        case FilterModeCreator:
+          if (activity.CreatorName.ToLower ().Contains (ActivitySearchBox.Text.ToLower ()))
+            show = true;
+          break;
+        case FilterModeTag:
+          if (activity.HasTagWithText (ActivitySearchBox.Text.ToLower ()))
+            show = true;
+          break;
+        default:
+          show = true;
+          break;
+        }
+        if (show)
+        {
+          var item = new UIActivityItem (this, activity.ID, activity.Name,
+                                         "Unknown", activity.Description);
+          ActivityItems.Add (item);
+        }
         i++;
         activity = MainProject.GetActivity (i);
       }
+      ShowActivityList ();
     }
 
 
@@ -396,6 +442,7 @@ namespace ActivityTracker
     // Load the list of instances for the selected user and activity.
     private void LoadInstanceList ()
     {
+      InstancesText.Content = "Activities for " + MainProject.SelectedUserName;
       InstanceItems.Clear ();
       int i = 0;
       Instance instance = MainProject.GetInstance (i);
@@ -407,6 +454,7 @@ namespace ActivityTracker
         i++;
         instance = MainProject.GetInstance (i);
       }
+      ShowInstanceList ();
     }
 
 
@@ -433,6 +481,42 @@ namespace ActivityTracker
     }
 
 
+    // Load list of users.
+    public void LoadUserList ()
+    {
+      UserList.Items.Clear ();
+      UserIDs.Clear ();
+      int i = 0;
+      User user = MainProject.GetUser (i);
+      while (user != null)
+      {
+        bool show = false;
+        switch (UserFilterMode.Text)
+        {
+        case FilterModeName:
+          if (user.Name.ToLower ().Contains (UserSearchBox.Text.ToLower ()))
+            show = true;
+          break;
+        case FilterModeTag:
+          if (user.HasTagWithText (UserSearchBox.Text.ToLower ()))
+            show = true;
+          break;
+        default:
+          show = true;
+          break;
+        }
+        if (show)
+        {
+          UserIDs.Add (user.ID);
+          UserList.Items.Add (user.Name);
+        }
+        i++;
+        user = MainProject.GetUser (i);
+      }
+      ShowActivityList ();
+    }
+
+
 ﻿//----------------------------------------------------------------------------------------
 // Session view
 
@@ -451,6 +535,7 @@ namespace ActivityTracker
         i++;
         session = MainProject.GetSession (i);
       }
+      ShowSessionList ();
     }
 
 
@@ -613,13 +698,14 @@ namespace ActivityTracker
 
     private void MenuLogoutClick (object sender, RoutedEventArgs e)
     {
-      // [wip] Log out.
+      MainProject.Logout ();
+      ShowNoView ();
     }
 
 
-    private void TextBox_TextChanged (object sender, TextChangedEventArgs e)
+    private void ActivitySearchButton_Click (object sender, RoutedEventArgs e)
     {
-      // [wip] Can this be removed?
+      LoadActivityList ();
     }
 
 
@@ -706,7 +792,6 @@ namespace ActivityTracker
             MainProject.DeleteActivity ();
           }
         LoadActivityList ();
-        ShowActivityList ();
         break;
 
       case View.Instances:
@@ -717,7 +802,6 @@ namespace ActivityTracker
             MainProject.DeleteInstance ();
           }
         LoadInstanceList ();
-        ShowInstanceList ();
         break;
 
       case View.Sessions:
@@ -728,7 +812,6 @@ namespace ActivityTracker
             MainProject.DeleteSession ();
           }
         LoadSessionList ();
-        ShowSessionList ();
         break;
 
       default:
@@ -760,7 +843,6 @@ namespace ActivityTracker
       MainProject.CreateActivity (NewActivityName.Text,
                                   NewActivityDescription.Text, tagList);
       LoadActivityList ();
-      ShowActivityList ();
       HideNewActivity ();
     }
 
@@ -804,7 +886,6 @@ namespace ActivityTracker
       Int64 percentFinished = Convert.ToInt64 (NewSessionPercentFinished.Text);
       MainProject.CreateSession (date, timeSpent, percentFinished);
       LoadSessionList ();
-      ShowSessionList ();
       HideNewSession ();
     }
 
@@ -899,5 +980,41 @@ namespace ActivityTracker
       }
     }
 
+
+    private void TextBox_TextChanged (object sender, TextChangedEventArgs e)
+    {
+      // Do Noting.
+    }
+
+
+    private void ActivitySearchBox_KeyDown (object sender, KeyEventArgs e)
+    {
+      if (e.Key == Key.Enter)
+        LoadActivityList ();
+    }
+
+
+    private void UserSearchButton_Click (object sender, RoutedEventArgs e)
+    {
+      LoadUserList ();
+    }
+
+
+    private void UserSearchBox_KeyDown (object sender, KeyEventArgs e)
+    {
+      if (e.Key == Key.Enter)
+        LoadUserList ();
+    }
+
+
+    private void UserList_SelectionChanged (object sender, SelectionChangedEventArgs e)
+    {
+      if (UserList.SelectedIndex >= 0 && UserList.SelectedIndex < UserIDs.Count)
+      {
+        if (!MainProject.SelectUser (UserIDs [UserList.SelectedIndex]))
+          MessageBox.Show (UserIDs [UserList.SelectedIndex].ToString ());
+        LoadInstanceList ();
+      }
+    }
   }
 }

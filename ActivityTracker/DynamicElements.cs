@@ -55,7 +55,7 @@ namespace ActivityTracker
     public string Creator
     {
       get {return (string) creator.Content;}
-      set {creator.Content = "Created by" + value;}
+      set {creator.Content = "Created by " + value;}
     }
 
     public string Description
@@ -108,7 +108,7 @@ namespace ActivityTracker
       ParentWindow = parentWindow;
       ID = id;
 
-      Box.Height = 40;
+      Box.Height = 50;
       Box.HorizontalAlignment = HorizontalAlignment.Stretch; 
       Box.Margin = new Thickness (4, 4, 4, 4);
       Color BorderColor = new Color ()
@@ -198,14 +198,14 @@ namespace ActivityTracker
 
       Bar.HorizontalAlignment = HorizontalAlignment.Stretch;
       Bar.VerticalAlignment = VerticalAlignment.Bottom;
-      Bar.Height = 18;
+      Bar.Height = 23;
 
       BarLeft.HorizontalAlignment = HorizontalAlignment.Stretch;
       BarLeft.VerticalAlignment = VerticalAlignment.Stretch;
       BarLeft.SetValue (Grid.ColumnProperty, 0);
       Color completed = new Color ()
       {
-        R = 0xD0, G = 0xD0, B = 0xF0, A = 0xFF
+        R = 0xA0, G = 0xA0, B = 0xE0, A = 0x80
       };
       BarLeft.Background = new SolidColorBrush (completed);
 
@@ -214,7 +214,7 @@ namespace ActivityTracker
       BarRight.SetValue (Grid.ColumnProperty, 1);
       Color remaining = new Color ()
       {
-        R = 0xF0, G = 0xF0, B = 0xF8, A = 0xFF
+        R = 0xD0, G = 0xD0, B = 0xF0, A = 0x80
       };
       BarRight.Background = new SolidColorBrush (remaining);
 
@@ -317,7 +317,7 @@ namespace ActivityTracker
       ParentWindow = parentWindow;
       this.id = id;
 
-      Box.Height = 40;
+      Box.Height = 50;
       Box.HorizontalAlignment = HorizontalAlignment.Stretch; 
       Box.Margin = new Thickness (4, 4, 4, 4);
       Color BorderColor = new Color ()

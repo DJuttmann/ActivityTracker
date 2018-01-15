@@ -31,11 +31,27 @@ namespace ActivityTracker
     DatabaseConnection Database;
     private string DatabaseFileName;
 
+    public UserType ActiveUserType
+    {
+      get
+      {
+        return ActiveUser != null ? ActiveUser.Type : UserType.Student;
+      }
+    }
+
     public string SelectedUserName
     {
       get
       {
         return SelectedUser != null ? SelectedUser.Name : "";
+      }
+    }
+
+    public UserType SelectedUserType
+    {
+      get
+      {
+        return SelectedUser != null ? SelectedUser.Type : UserType.None;
       }
     }
 
@@ -117,6 +133,8 @@ namespace ActivityTracker
           success = false;
         if (!Database.LoadAllActivities (Activities, Tags))
           success = false;
+        if (!Database.LoadAllUsers (Users, Tags))
+          success = false;
       }
       catch (Exception ex)
       {
@@ -187,12 +205,15 @@ namespace ActivityTracker
       if (!ValidatePassword (password))
         return false;
 
-      // [wip] check if the username already exists!
+      // check if the username already exists.
+      if (Users.Find (x => x.Name == userName) != null)
+        return false;
       
       User newUser = new User (0, userName,
                                CreateHash (password), type);
       if (Database.AddUser (newUser))
       {
+        Users.Add (newUser);
         ActiveUser = newUser; // new user is logged in
         SelectUser (ActiveUser);
         return true;
@@ -207,8 +228,9 @@ namespace ActivityTracker
       if (!ValidatePassword (password))
         return false;
 
-      User tempUser = new User ();
-      if (!tempUser.LoadFromDatabase (Database, userName))
+      User tempUser = Users.Find (x => x.Name == userName);
+//      if (!tempUser.LoadFromDatabase (Database, userName))
+      if (tempUser == null)
       {
         System.Windows.MessageBox.Show ("Username not found.");
         return false; // user not found.
@@ -221,6 +243,25 @@ namespace ActivityTracker
         return true;
       }
       return false;
+    }
+
+
+    // Log out currently active user.
+    public void Logout ()
+    {
+      ActiveUser = null;
+      SelectUser (null);
+      SelectActivity (null);
+      SelectInstance (null);
+    }
+
+
+    // Get activity by index in list;
+    public User GetUser (int index)
+    {
+      if (index < 0 || index >= Users.Count)
+        return null;
+      return Users [index];
     }
 
 

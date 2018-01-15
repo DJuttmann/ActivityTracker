@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ActivityTracker"
         mc:Ignorable="d"
-        Title="Activity Tracker" Height="350" Width="525">
+        Title="Activity Tracker" Height="480" Width="640">
 
     <Grid x:Name="Root">
         <Grid.RowDefinitions>
@@ -74,7 +74,7 @@
             </Border>
 
             <!-- FIND ACTIVITY -->
-            <Border x:Name="FindActivity" Visibility="Hidden" BorderBrush="#000000" BorderThickness="1" Grid.Column="1">
+            <Border x:Name="FindActivity" Visibility="Visible" BorderBrush="#000000" BorderThickness="1" Grid.Column="1">
                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="26"/>
@@ -97,9 +97,10 @@
                             <SolidColorBrush Color="#FFF0F0F0"/>
                         </Grid.Background>
                         <Label Content="Filter by" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="55"/>
-                        <ComboBox HorizontalAlignment="Left" Height="16" Margin="55,5,0,0" VerticalAlignment="Top" Width="76"/>
+                        <ComboBox x:Name="ActivityFilterMode" HorizontalAlignment="Left" Height="20" Margin="55,3,0,0" VerticalAlignment="Top" Width="76"/>
                         <Label Content="Search for" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="26" Grid.Row="1"/>
-                        <TextBox x:Name="ActivitySearchBox" HorizontalAlignment="Stretch" Height="19" Margin="6,0,6,0" TextWrapping="Wrap" Text="&lt;Tag&gt;" VerticalAlignment="Top" TextChanged="TextBox_TextChanged" Grid.Row="2"/>
+                        <Button x:Name="ActivitySearchButton" Content="Go" HorizontalAlignment="Right" Margin="0,3,6,0" Grid.Row="1" VerticalAlignment="Top" Width="36" Click="ActivitySearchButton_Click"/>
+                        <TextBox x:Name="ActivitySearchBox" HorizontalAlignment="Stretch" Height="19" Margin="6,0,6,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Grid.Row="2" KeyDown="ActivitySearchBox_KeyDown"/>
                     </Grid>
                 </Grid>
             </Border>
@@ -132,9 +133,9 @@
                             <SolidColorBrush Color="#FFF0F0F0"/>
                         </Grid.Background>
                         <Label Content="Name" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="86" Grid.Row="0"/>
-                        <TextBox x:Name="NewActivityName" HorizontalAlignment="Stretch" Height="19" Margin="6,0,6,0" TextWrapping="Wrap" VerticalAlignment="Top" TextChanged="TextBox_TextChanged" Grid.Row="1"/>
+                        <TextBox x:Name="NewActivityName" HorizontalAlignment="Stretch" Height="19" Margin="6,0,6,0" TextWrapping="Wrap" VerticalAlignment="Top" Grid.Row="1"/>
                         <Label Content="Description" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="86" Margin="0,0,0,0" Grid.Row="2"/>
-                        <TextBox x:Name="NewActivityDescription" HorizontalAlignment="Stretch" Margin="6,0,6,0" TextWrapping="Wrap" AcceptsReturn="True" VerticalAlignment="Stretch" TextChanged="TextBox_TextChanged" Grid.Row="3"/>
+                        <TextBox x:Name="NewActivityDescription" HorizontalAlignment="Stretch" Margin="6,0,6,0" TextWrapping="Wrap" AcceptsReturn="True" VerticalAlignment="Stretch" Grid.Row="3"/>
                         <Label Content="Tags" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="86" Margin="0,0,0,0" Grid.Row="4"/>
                         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="5">
                             <Grid.ColumnDefinitions>
@@ -158,7 +159,7 @@
             </Border>
 
             <!-- EDIT ACTIVITY -->
-            <Border x:Name="EditActivity" Visibility="Visible" BorderBrush="#000000" BorderThickness="1" Grid.Column="1">
+            <Border x:Name="EditActivity" Visibility="Hidden" BorderBrush="#000000" BorderThickness="1" Grid.Column="1">
                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="26"/>
@@ -185,9 +186,9 @@
                             <SolidColorBrush Color="#FFF0F0F0"/>
                         </Grid.Background>
                         <Label Content="Name" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="86" Grid.Row="0"/>
-                        <TextBox x:Name="EditActivityName" HorizontalAlignment="Stretch" Height="19" Margin="6,0,6,0" TextWrapping="Wrap" VerticalAlignment="Top" TextChanged="TextBox_TextChanged" Grid.Row="1"/>
+                        <TextBox x:Name="EditActivityName" HorizontalAlignment="Stretch" Height="19" Margin="6,0,6,0" TextWrapping="Wrap" VerticalAlignment="Top" Grid.Row="1"/>
                         <Label Content="Description" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="86" Margin="0,0,0,0" Grid.Row="2"/>
-                        <TextBox x:Name="EditActivityDescription" HorizontalAlignment="Stretch" Margin="6,0,6,0" TextWrapping="Wrap" AcceptsReturn="True" VerticalAlignment="Stretch" TextChanged="TextBox_TextChanged" Grid.Row="3"/>
+                        <TextBox x:Name="EditActivityDescription" HorizontalAlignment="Stretch" Margin="6,0,6,0" TextWrapping="Wrap" AcceptsReturn="True" VerticalAlignment="Stretch" Grid.Row="3"/>
                         <Label Content="Tags" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="86" Margin="0,0,0,0" Grid.Row="4"/>
                         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="5">
                             <Grid.ColumnDefinitions>
@@ -232,7 +233,7 @@
             </Border>
 
             <!-- SELECT USER -->
-            <Border x:Name="SelectUser" Visibility="Hidden" BorderBrush="#000000" BorderThickness="1" Grid.Column="1">
+            <Border x:Name="SelectUser" Visibility="Visible" BorderBrush="#000000" BorderThickness="1" Grid.Column="1">
                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="26"/>
@@ -255,10 +256,11 @@
                             <SolidColorBrush Color="#FFF0F0F0"/>
                         </Grid.Background>
                         <Label Content="Filter by" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="55"/>
-                        <ComboBox x:Name="FilterUsers" HorizontalAlignment="Left" Height="16" Margin="55,5,0,0" VerticalAlignment="Top" Width="76"/>
+                        <ComboBox x:Name="UserFilterMode" HorizontalAlignment="Left" Height="20" Margin="55,3,0,0" VerticalAlignment="Top" Width="76"/>
                         <Label Content="Search for" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="86" Grid.Row="1"/>
-                        <TextBox x:Name="InstanceSearchBox" HorizontalAlignment="Stretch" Height="19" Margin="6,0,6,0" TextWrapping="Wrap" Text="&lt;Tag&gt;" VerticalAlignment="Top" TextChanged="TextBox_TextChanged" Grid.Row="2"/>
-                        <ListBox x:Name="UserList" HorizontalAlignment="Stretch" Margin="6,0,6,6" VerticalAlignment="Stretch" Grid.Row="3"/>
+                        <Button x:Name="UserSearchButton" Content="Go" HorizontalAlignment="Right" Margin="0,3,6,0" Grid.Row="1" VerticalAlignment="Top" Width="36" Click="UserSearchButton_Click"/>
+                        <TextBox x:Name="UserSearchBox" HorizontalAlignment="Stretch" Height="19" Margin="6,0,6,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" TextChanged="TextBox_TextChanged" Grid.Row="2" KeyDown="UserSearchBox_KeyDown"/>
+                        <ListBox x:Name="UserList" HorizontalAlignment="Stretch" Margin="6,0,6,6" VerticalAlignment="Stretch" Grid.Row="3" SelectionChanged="UserList_SelectionChanged"/>
                     </Grid>
                 </Grid>
             </Border>
