@@ -73,6 +73,7 @@ namespace ActivityTracker
 ﻿//========================================================================================
 // Manage visibility of UI elements
 
+
     // Show no view.
     private void ShowNoView ()
     {
@@ -203,6 +204,8 @@ namespace ActivityTracker
         NewActivityName.Text = "";
         NewActivityDescription.Text = "";
         NewActivityTagInput.Text = "";
+        NewActivityTags.Items.Clear ();
+        ClearNewActivityValidation ();
       }
     }
 
@@ -228,6 +231,10 @@ namespace ActivityTracker
         EditActivityName.Text = MainProject.SelectedActivityName;
         EditActivityDescription.Text = MainProject.SelectedActivityDescription;
         EditActivityTagInput.Text = "";
+        EditActivityTags.Items.Clear ();
+        foreach (string s in MainProject.SelectedActivityTags)
+          EditActivityTags.Items.Add (s);
+        ClearEditActivityValidation ();
       }
     }
 
@@ -295,6 +302,8 @@ namespace ActivityTracker
 
 
 ﻿//========================================================================================
+// General Functionality
+
 // Activity view
 
 
@@ -380,7 +389,7 @@ namespace ActivityTracker
     }
 
 
-﻿//========================================================================================
+﻿//----------------------------------------------------------------------------------------
 // Instance view
 
 
@@ -424,7 +433,7 @@ namespace ActivityTracker
     }
 
 
-﻿//========================================================================================
+﻿//----------------------------------------------------------------------------------------
 // Session view
 
 
@@ -559,7 +568,7 @@ namespace ActivityTracker
 
 
 
-﻿//========================================================================================
+﻿//----------------------------------------------------------------------------------------
 // Misc
 
 
@@ -745,7 +754,11 @@ namespace ActivityTracker
     {
       if (!ValidateNewActivity ())
         return;
-      MainProject.CreateActivity (NewActivityName.Text, NewActivityDescription.Text);
+      List <string> tagList = new List <string> ();
+      foreach (object obj in NewActivityTags.Items)
+        tagList.Add ((string) obj);
+      MainProject.CreateActivity (NewActivityName.Text,
+                                  NewActivityDescription.Text, tagList);
       LoadActivityList ();
       ShowActivityList ();
       HideNewActivity ();
@@ -762,8 +775,11 @@ namespace ActivityTracker
     {
       if (!ValidateEditActivity ())
         return;
+      List <string> tagList = new List <string> ();
+      foreach (object obj in EditActivityTags.Items)
+        tagList.Add ((string) obj);
       MainProject.EditActivity (EditActivityName.Text,
-                                EditActivityDescription.Text);
+                                EditActivityDescription.Text, tagList);
       UpdateActivityList ();
       ShowActivityList ();
       HideEditActivity ();
@@ -820,5 +836,68 @@ namespace ActivityTracker
     {
       HideEditSession ();
     }
+
+
+    private void NewActivityAddTag_Click (object sender, RoutedEventArgs e)
+    {
+      if (Validation.IsName (NewActivityTagInput.Text))
+      {
+        foreach (object obj in NewActivityTags.Items)
+        {
+          if ((string) obj == NewActivityTagInput.Text)
+            return;
+        }
+        NewActivityTags.Items.Add (NewActivityTagInput.Text);
+        NewActivityTagInput.Text = string.Empty;
+      }
+    }
+
+
+    private void NewActivityTagInput_KeyDown (object sender, KeyEventArgs e)
+    {
+      if (e.Key == Key.Enter)
+        NewActivityAddTag_Click (null, null);
+    }
+
+
+    private void NewActivityTags_KeyDown (object sender, KeyEventArgs e)
+    {
+      if (e.Key == Key.Delete || e.Key == Key.Back)
+      {
+        NewActivityTags.Items.Remove (NewActivityTags.SelectedItem);
+      }
+    }
+
+
+    private void EditActivityAddTag_Click (object sender, RoutedEventArgs e)
+    {
+      if (Validation.IsName (EditActivityTagInput.Text))
+      {
+        foreach (object obj in EditActivityTags.Items)
+        {
+          if ((string) obj == EditActivityTagInput.Text)
+            return;
+        }
+        EditActivityTags.Items.Add (EditActivityTagInput.Text);
+        EditActivityTagInput.Text = string.Empty;
+      }
+    }
+
+
+    private void EditActivityTagInput_KeyDown (object sender, KeyEventArgs e)
+    {
+      if (e.Key == Key.Enter)
+        EditActivityAddTag_Click (null, null);
+    }
+
+
+    private void EditActivityTags_KeyDown (object sender, KeyEventArgs e)
+    {
+      if (e.Key == Key.Delete || e.Key == Key.Back)
+      {
+        EditActivityTags.Items.Remove (EditActivityTags.SelectedItem);
+      }
+    }
+
   }
 }

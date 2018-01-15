@@ -29,7 +29,7 @@ namespace ActivityTracker
 
   public class User
   {
-    public Int64 ID {get; private set;}
+    public Int64 ID;
     public string Name {get; private set;}
     public string PasswordHash {get; private set;}
     public UserType Type {get; private set;}
@@ -57,7 +57,7 @@ namespace ActivityTracker
     // Constructor from name and password
     public User (Int64 id, string name, string password, UserType type)
     {
-      ID = id;
+      this.ID = id;
       Name = name;
       PasswordHash = password;
       Type = type;
@@ -201,36 +201,47 @@ namespace ActivityTracker
 
   public class Activity
   {
-    public Int64 ID {get; private set;}
+    public Int64 ID;
     public Int64 CreatorID {get; private set;}
     public string Name {get; set;}
     public string Description {get; set;}
-    private List <Tag> Tags;
+    private List <Tag> tags;
+
+    public List <string> TagNames
+    {
+      get
+      {
+        var tagList = new List <string> ();
+        foreach (Tag t in tags)
+          tagList.Add (t.Name);
+        return tagList;
+      }
+    }
 
 
     // Constructor.
     public Activity (Int64 id, Int64 creatorID, string name, string description)
     {
-      ID = id;
+      this.ID = id;
       CreatorID = creatorID;
       Name = name;
       Description = description;
-      Tags = new List <Tag> ();
+      tags = new List <Tag> ();
     }
 
 
     // Check if activity has tag
     public bool HasTag (Tag tag)
     {
-      return Tags.Any (x => x.Equals (tag));
+      return tags.Any (x => x.Equals (tag));
     }
 
 
     // Add tag to the Activity.
     public void AddTag (Tag newTag)
     {
-      if (!Tags.Any (x => x.Equals (newTag)))
-        Tags.Add (newTag);
+      if (!tags.Any (x => x.Equals (newTag)))
+        tags.Add (newTag);
     }
 
 
@@ -246,10 +257,10 @@ namespace ActivityTracker
     // Add tag to the Activity based on ID and list of all tags.
     public void RemoveTag (Tag deleteTag)
     {
-      for (int i = 0; i < Tags.Count;)
+      for (int i = 0; i < tags.Count;)
       {
-        if (Tags [i].Equals (deleteTag))
-          Tags.RemoveAt (i);
+        if (tags [i].Equals (deleteTag))
+          tags.RemoveAt (i);
         else
           i++;
       }
@@ -265,7 +276,7 @@ namespace ActivityTracker
 
   public class Instance
   {
-    public Int64 ID {get; private set;}
+    public Int64 ID;
     private Activity MyActivity;
     public Int64 ActivityID {get {return MyActivity.ID;}}
     private List <Session> Sessions;
@@ -306,7 +317,7 @@ namespace ActivityTracker
 
     public Instance (Int64 id, Activity act)
     {
-      ID = id;
+      this.ID = id;
       MyActivity = act;
       Sessions = new List <Session> ();
       DataLoaded = false;
@@ -369,7 +380,7 @@ namespace ActivityTracker
 
   public class Session
   {
-    public Int64 ID {get; private set;}
+    public Int64 ID;
     public DateTime Date {get; set;}
     public Int64 TimeSpent {get; set;}
     public Int64 PercentFinished {get; set;}
@@ -377,7 +388,7 @@ namespace ActivityTracker
 
     public Session (Int64 id, DateTime date, Int64 timeSpent, Int64 percentFinished)
     {
-      ID = id;
+      this.ID = id;
       Date = date;
       TimeSpent = timeSpent;
       PercentFinished = percentFinished;
@@ -411,13 +422,13 @@ namespace ActivityTracker
 
   public class Tag
   {
-    public Int64 ID {get; private set;}
+    public Int64 ID;
     public string Name {get; private set;}
 
 
     public Tag (Int64 id, string name)
     {
-      ID = id;
+      this.ID = id;
       Name = name;
     }
 

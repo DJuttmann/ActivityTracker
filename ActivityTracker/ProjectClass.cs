@@ -55,6 +55,15 @@ namespace ActivityTracker
       }
     }
 
+    public List <string> SelectedActivityTags
+    {
+      get
+      {
+        return SelectedActivity != null ? SelectedActivity.TagNames
+                                        : new List <string> ();
+      }
+    }
+
     public DateTime SelectedSessionDate
     {
       get
@@ -180,7 +189,7 @@ namespace ActivityTracker
 
       // [wip] check if the username already exists!
       
-      User newUser = new User (Database.NewUserID (), userName,
+      User newUser = new User (0, userName,
                                CreateHash (password), type);
       if (Database.AddUser (newUser))
       {
@@ -279,39 +288,78 @@ namespace ActivityTracker
 
 
     // Create new activity owned by SelectedUser.
-    public bool CreateActivity (string name, string description)
+    public bool CreateActivity (string name, string description, 
+                                List <string> tagList)
     {
-      Int64 id = Database.NewActivityID ();
+      Activity newActivity = new Activity (0, SelectedUser.ID, name, description);
+      if (!Database.AddActivity (newActivity))
+        return false;
+      Activities.Add (newActivity);
+      SelectedUser.AddActivity (newActivity);
 
-      Activity newActivity = new Activity (id, SelectedUser.ID, name, description);
-      if (Database.AddActivity (newActivity))
+      // Add tags
+      foreach (string tag in tagList)
       {
-        Activities.Add (newActivity);
-        SelectedUser.AddActivity (newActivity);
-        return true;
+        Tag currentTag = Tags.Find (x => x.Name == tag);
+        if (currentTag == null) // if tag does not exist yet, create it.
+        {
+          System.Windows.MessageBox.Show ("Tag " + tag + " does not exist");
+          currentTag = new Tag (0, tag);
+          if (!Database.AddTag (currentTag))
+            continue;
+          Tags.Add (currentTag);
+        }
+        if (Database.AddActivityTag (newActivity.ID, currentTag.ID))
+          newActivity.AddTag (currentTag);
       }
-      return false;
+      return true;
     }
 
 
     // Edit the selected Activity.
-    public bool EditActivity (string name, string description)
+    public bool EditActivity (string name, string description,
+                              List <string> tagList)
     {
       if (SelectedActivity == null)
         return false;
+      // Make sure SelectedActivity still exists?
       Activity activity = Activities.Find (x => x.ID == SelectedActivity.ID);
       if (activity == null)
         return false;
       Activity editActivity = new Activity (SelectedActivity.ID, activity.CreatorID,
                                             name, description);
 
-      if (Database.UpdateActivity (editActivity))
+      if (!Database.UpdateActivity (editActivity))
+        return false;
+      activity.Name = name;
+      activity.Description = description;
+
+      // Add new tags
+      foreach (string tag in tagList)
       {
-        activity.Name = name;
-        activity.Description = description;
-        return true;
+        Tag currentTag = Tags.Find (x => x.Name == tag);
+        if (currentTag == null) // if tag does not exist yet, create it.
+        {
+          currentTag = new Tag (0, tag);
+          if (!Database.AddTag (currentTag))
+            continue;
+          Tags.Add (currentTag);
+        }
+        if (Database.AddActivityTag (activity.ID, currentTag.ID))
+          activity.AddTag (currentTag);
       }
-      return false;
+
+      // Remove deleted tags
+      foreach (string tag in activity.TagNames)
+      {
+        if (!tagList.Contains (tag))
+        {
+          Tag currentTag = Tags.Find (x => x.Name == tag);
+          if (Database.RemoveActivityTag (activity.ID, currentTag.ID))
+            activity.RemoveTag (currentTag);
+        }
+      }
+      return true;
     }
 
 
@@ -394,8 +442,7 @@ namespace ActivityTracker
       if (activity == null)
         return false;
 
-      Int64 id = Database.NewInstanceID ();
-      Instance newInstance = new Instance (id, activity);
+      Instance newInstance = new Instance (0, activity);
       if (Database.AddInstance (SelectedUser.ID, newInstance))
       {
         SelectedUser.AddInstance (newInstance);
@@ -463,9 +510,7 @@ namespace ActivityTracker
     public bool CreateSession (DateTime date, Int64 timeSpent, 
                                Int64 percentFinished)
     {
-      Int64 id = Database.NewSessionID ();
-
-      Session newSession = new Session (id, date, timeSpent, percentFinished);
+      Session newSession = new Session (0, date, timeSpent, percentFinished);
       if (Database.AddSession (SelectedInstance.ID, newSession))
       {
         SelectedInstance.AddSession (newSession);
@@ -478,8 +523,9 @@ namespace ActivityTracker
     // Edit selected session.
     public bool EditSession (DateTime date, Int64 timeSpent, Int64 percentFinished)
     {
-      if (SelectedSession == null)
+      if (SelectedSession == null || SelectedInstance == null)
         return false;
+      // Make sure Selectedsession still exists?
       Session session = SelectedInstance.GetSession (SelectedSession.ID);
       if (session == null)
         return false;
@@ -538,9 +584,7 @@ namespace ActivityTracker
 
     public bool CreateTag (string name)
     {
-      Int64 id = Database.NewTagID ();
-
-      Tag newTag = new Tag (id, name);
+      Tag newTag = new Tag (0, name);
       if (Database.AddTag (newTag))
       {
         Tags.Add (newTag);

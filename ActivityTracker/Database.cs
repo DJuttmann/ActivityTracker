@@ -127,6 +127,8 @@ namespace ActivityTracker
 //========================================================================================
 // Reading and Writing
 
+
+    /*
     public Int64 NewUserID ()
     {
       return DateTime.Now.Ticks;
@@ -154,7 +156,7 @@ namespace ActivityTracker
     public Int64 NewTagID ()
     {
       return DateTime.Now.Ticks;
-    }
+    } */
 
 
     private static string DateToString (DateTime d)
@@ -241,12 +243,17 @@ namespace ActivityTracker
       if (Open ())
       {
         command.CommandText = "INSERT INTO Users " +
-          "(UserID, UserName, PasswordHash, UserType) values (" +
-          user.ID.ToString () + ", '" +
+          "(UserName, PasswordHash, UserType) values ('" +
+          // user.ID.ToString () + ", '" +
           user.Name + "', '" +
           user.PasswordHash + "', '" +
           user.Type.ToString () + "')";
         success = command.ExecuteNonQuery () == 1;
+        if (success)
+        {
+          command.CommandText = "SELECT last_insert_rowid ()";
+          user.ID = (Int64) command.ExecuteScalar ();
+        }
         Close ();
       }
       return success;
@@ -324,12 +331,17 @@ namespace ActivityTracker
       if (Open ())
       {
         command.CommandText = "INSERT INTO Activities " +
-          "(ActivityID, CreatorID, ActName, Description) values (" +
-          activity.ID.ToString () + ", " +
+          "(CreatorID, ActName, Description) values (" +
+          // activity.ID.ToString () + ", " +
           activity.CreatorID.ToString () + ", '" +
           activity.Name + "', '" +
           activity.Description + "')";
         success = command.ExecuteNonQuery () == 1;
+        if (success)
+        {
+          command.CommandText = "SELECT last_insert_rowid ()";
+          activity.ID = (Int64) command.ExecuteScalar ();
+        }
         Close ();
       }
       return success;
@@ -424,13 +436,18 @@ namespace ActivityTracker
       if (Open ())
       {
         command.CommandText = "INSERT INTO Instances " +
-          "(InstanceID, UserID, ActivityID, TimeSpent, PercentFinished) values (" +
-          instance.ID.ToString () + ", " +
+          "(UserID, ActivityID, TimeSpent, PercentFinished) values (" +
+          // instance.ID.ToString () + ", " +
           userID.ToString () + ", " +
           instance.ActivityID.ToString () + ", " +
           instance.TimeSpent.ToString () + ", " +
           instance.PercentFinished.ToString () + ")";
         success = command.ExecuteNonQuery () == 1;
+        if (success)
+        {
+          command.CommandText = "SELECT last_insert_rowid ()";
+          instance.ID = (Int64) command.ExecuteScalar ();
+        }
         Close ();
       }
       return success;
@@ -513,13 +530,18 @@ namespace ActivityTracker
       if (Open ())
       {
         command.CommandText = "INSERT INTO Sessions " +
-          "(SessionID, InstanceID, Date, TimeSpent, PercentFinished) values (" +
-          session.ID.ToString () + ", " +
+          "(InstanceID, Date, TimeSpent, PercentFinished) values (" +
+          // session.ID.ToString () + ", " +
           instanceID.ToString () + ", '" +
           DateToString (session.Date) + "', " +
           session.TimeSpent.ToString () + ", " +
           session.PercentFinished.ToString () + ")";
         success = command.ExecuteNonQuery () == 1;
+        if (success)
+        {
+          command.CommandText = "SELECT last_insert_rowid ()";
+          session.ID = (Int64) command.ExecuteScalar ();
+        }
         Close ();
       }
       return success;
@@ -597,11 +619,15 @@ namespace ActivityTracker
       SQLiteCommand command = new SQLiteCommand (Connection);
       if (Open ())
       {
-        command.CommandText = "INSERT INTO Tags (TagId, Name) values (" +
-          newTag.ID.ToString () + ", '" +
+        command.CommandText = "INSERT INTO Tags (Name) values ('" +
+          // newTag.ID.ToString () + ", '" +
           newTag.Name + "')";
-        command.ExecuteNonQuery ();
         success = command.ExecuteNonQuery () == 1;
+        if (success)
+        {
+          command.CommandText = "SELECT last_insert_rowid ()";
+          newTag.ID = (Int64) command.ExecuteScalar ();
+        }
         Close ();
       }
       return success;
@@ -615,10 +641,10 @@ namespace ActivityTracker
       SQLiteCommand command = new SQLiteCommand (Connection);
       if (Open ())
       {
-        command.CommandText = "INSERT INTO UserTags (UserID, TagId) values (" +
+        command.CommandText = "INSERT OR IGNORE INTO UserTags (UserID, TagId)" +
+          " values (" +
           UserID.ToString () + ", " +
           TagID.ToString () + ")";
-        command.ExecuteNonQuery ();
         success = command.ExecuteNonQuery () == 1;
         Close ();
       }
@@ -650,7 +676,8 @@ namespace ActivityTracker
       SQLiteCommand command = new SQLiteCommand (Connection);
       if (Open ())
       {
-        command.CommandText = "INSERT INTO ActivityTags (ActivityID, TagId) values (" +
+        command.CommandText = "INSERT OR IGNORE INTO ActivityTags (ActID, TagId)" +
+          " values (" +
           ActivityID.ToString () + ", " +
           TagID.ToString () + ")";
         success = command.ExecuteNonQuery () == 1;
@@ -669,7 +696,7 @@ namespace ActivityTracker
       {
         command.CommandText = "DELETE FROM ActivityTags WHERE " +
           "ActID = " + ActivityID.ToString () +
-          ", TagID = " + TagID.ToString ();
+          " AND TagID = " + TagID.ToString ();
         success = command.ExecuteNonQuery () > 0;
         Close ();
       }
