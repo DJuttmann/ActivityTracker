@@ -41,6 +41,11 @@ namespace ActivityTracker
     private List <ISelectableUI> SessionItems;
     private View ActiveView;
 
+    private readonly SolidColorBrush InvalidInput = 
+      new SolidColorBrush (Color.FromArgb (0xFF, 0xFF, 0xA0, 0xA0));
+    private readonly SolidColorBrush ValidInput = 
+      new SolidColorBrush (Color.FromArgb (0xFF, 0xFF, 0xFF, 0xFF));
+
     // Constructor.
     public MainWindow ()
     {
@@ -249,6 +254,7 @@ namespace ActivityTracker
         NewSessionDay.Text = "";
         NewSessionTimeSpent.Text = "";
         NewSessionPercentFinished.Text = "";
+        ClearNewSessionValidation ();
       }
     }
 
@@ -274,6 +280,7 @@ namespace ActivityTracker
         EditSessionDay.Text = MainProject.SelectedSessionDate.Day.ToString ();
         EditSessionTimeSpent.Text = MainProject.SelectedSessionTimeSpent;
         EditSessionPercentFinished.Text = MainProject.SelectedSessionPercentFinished;
+        ClearEditSessionValidation ();
       }
     }
 
@@ -328,6 +335,48 @@ namespace ActivityTracker
     {
       foreach (UIActivityItem activity in ActivityItems)
         activity.Selected = false;
+    }
+
+
+    // Remove new activity validation colours.
+    public void ClearNewActivityValidation ()
+    {
+      NewActivityName.Background = ValidInput;
+    }
+
+
+    // Validate new activity input.
+    public bool ValidateNewActivity ()
+    {
+      ClearNewActivityValidation ();
+      bool success = true;
+      if (!Validation.IsName (NewActivityName.Text))
+      {
+        NewActivityName.Background = InvalidInput;
+        success = false;
+      }
+      return success;
+    }
+
+
+    // Remove edit activity validation colours.
+    public void ClearEditActivityValidation ()
+    {
+      EditActivityName.Background = ValidInput;
+    }
+
+
+    // Validate edit activity input.
+    public bool ValidateEditActivity ()
+    {
+      ClearEditActivityValidation ();
+      bool success = true;
+      if (!Validation.IsName (EditActivityName.Text))
+      {
+        EditActivityName.Background = InvalidInput;
+        success = false;
+      }
+      return success;
     }
 
 
@@ -417,6 +466,97 @@ namespace ActivityTracker
       foreach (UISessionItem instance in SessionItems)
         instance.Selected = false;
     }
+
+
+    // Remove new session validation colours.
+    private void ClearNewSessionValidation ()
+    {
+        NewSessionYear.Background = ValidInput;
+        NewSessionMonth.Background = ValidInput;
+        NewSessionDay.Background = ValidInput;
+        NewSessionTimeSpent.Background = ValidInput;
+        NewSessionPercentFinished.Background = ValidInput;
+    }
+
+
+    // Validate new session input
+    private bool ValidateNewSession ()
+    {
+      ClearNewSessionValidation ();
+      bool success = true;
+      if (!Validation.IsYear (NewSessionYear.Text))
+      {
+        NewSessionYear.Background = InvalidInput;
+        success = false;
+      }
+      if (!Validation.IsMonth (NewSessionMonth.Text))
+      {
+        NewSessionMonth.Background = InvalidInput;
+        success = false;
+      }
+      if (!Validation.IsDay (NewSessionDay.Text))
+      {
+        NewSessionDay.Background = InvalidInput;
+        success = false;
+      }
+      if (!Validation.IsTime (NewSessionTimeSpent.Text))
+      {
+        NewSessionTimeSpent.Background = InvalidInput;
+        success = false;
+      }
+      if (!Validation.IsPercent (NewSessionPercentFinished.Text))
+      {
+        NewSessionPercentFinished.Background = InvalidInput;
+        success = false;
+      }
+      return success;
+    }
+
+
+    // Remove edit session validation colours.
+    private void ClearEditSessionValidation ()
+    {
+        EditSessionYear.Background = ValidInput;
+        EditSessionMonth.Background = ValidInput;
+        EditSessionDay.Background = ValidInput;
+        EditSessionTimeSpent.Background = ValidInput;
+        EditSessionPercentFinished.Background = ValidInput;
+    }
+
+
+    // Validate edit session input
+    private bool ValidateEditSession ()
+    {
+      ClearEditSessionValidation ();
+      bool success = true;
+      if (!Validation.IsYear (EditSessionYear.Text))
+      {
+        EditSessionYear.Background = InvalidInput;
+        success = false;
+      }
+      if (!Validation.IsMonth (EditSessionMonth.Text))
+      {
+        EditSessionMonth.Background = InvalidInput;
+        success = false;
+      }
+      if (!Validation.IsDay (EditSessionDay.Text))
+      {
+        EditSessionDay.Background = InvalidInput;
+        success = false;
+      }
+      if (!Validation.IsTime (EditSessionTimeSpent.Text))
+      {
+        EditSessionTimeSpent.Background = InvalidInput;
+        success = false;
+      }
+      if (!Validation.IsPercent (EditSessionPercentFinished.Text))
+      {
+        EditSessionPercentFinished.Background = InvalidInput;
+        success = false;
+      }
+      return success;
+    }
+
 
 
 ﻿//========================================================================================
@@ -603,6 +743,8 @@ namespace ActivityTracker
 
     private void ButtonCeateActivity_Click (object sender, RoutedEventArgs e)
     {
+      if (!ValidateNewActivity ())
+        return;
       MainProject.CreateActivity (NewActivityName.Text, NewActivityDescription.Text);
       LoadActivityList ();
       ShowActivityList ();
@@ -618,6 +760,8 @@ namespace ActivityTracker
 
     private void ButtonSaveEditActivity_Click (object sender, RoutedEventArgs e)
     {
+      if (!ValidateEditActivity ())
+        return;
       MainProject.EditActivity (EditActivityName.Text,
                                 EditActivityDescription.Text);
       UpdateActivityList ();
@@ -634,11 +778,13 @@ namespace ActivityTracker
 
     private void ButtonCeateSession_Click (object sender, RoutedEventArgs e)
     {
+      if (!ValidateNewSession ())
+        return;
       int Year = Convert.ToInt32 (NewSessionYear.Text);
       int Month = Convert.ToInt32 (NewSessionMonth.Text);
       int Day = Convert.ToInt32 (NewSessionDay.Text);
       DateTime date = new DateTime (Year, Month, Day);
-      Int64 timeSpent = Convert.ToInt64 (NewSessionTimeSpent.Text);
+      Int64 timeSpent = Validation.TimeToInt (NewSessionTimeSpent.Text);
       Int64 percentFinished = Convert.ToInt64 (NewSessionPercentFinished.Text);
       MainProject.CreateSession (date, timeSpent, percentFinished);
       LoadSessionList ();
@@ -655,11 +801,13 @@ namespace ActivityTracker
 
     private void ButtonEditSaveSession_Click (object sender, RoutedEventArgs e)
     {
+      if (!ValidateEditSession ())
+        return;
       int Year = Convert.ToInt32 (EditSessionYear.Text);
       int Month = Convert.ToInt32 (EditSessionMonth.Text);
       int Day = Convert.ToInt32 (EditSessionDay.Text);
       DateTime date = new DateTime (Year, Month, Day);
-      Int64 timeSpent = Convert.ToInt64 (EditSessionTimeSpent.Text);
+      Int64 timeSpent = Validation.TimeToInt (EditSessionTimeSpent.Text);
       Int64 percentFinished = Convert.ToInt64 (EditSessionPercentFinished.Text);
       MainProject.EditSession (date, timeSpent, percentFinished);
       UpdateSessionList ();
