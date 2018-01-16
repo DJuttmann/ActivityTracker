@@ -71,7 +71,7 @@ namespace ActivityTracker
       if (MyProject != null && Validate ())
       {
         if (MyProject.RegisterUser (RegisterName.Text, RegisterPassword.Password, 
-              DatabaseConnection.StringToUserType (RegisterUserType.Text)))
+              Validation.StringToUserType (RegisterUserType.Text)))
         {
           DialogResult = true;
           this.Close ();

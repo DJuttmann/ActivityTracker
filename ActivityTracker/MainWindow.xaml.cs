@@ -87,11 +87,12 @@ namespace ActivityTracker
       MenuRegister.IsEnabled = false;
       ShowInstanceView ();
       Toolbar.IsEnabled = true;
-      ActiveUserLabel.Content = "Logged in as: " + MainProject.ActiveUserName;
+      ActiveUserLabel.Content = "Logged in as: " + MainProject.ActiveUserName +
+                                " (" + MainProject.ActiveUserType.ToString () + ")";
 
       UserSearchBox.Text = "";
       if (MainProject.ActiveUserType == UserType.Student)
-        SelectUser.IsEnabled = true; // [wip] change this to false.
+        SelectUser.IsEnabled = false;
       else
         SelectUser.IsEnabled = true;
     }
@@ -172,7 +173,7 @@ namespace ActivityTracker
 
       ViewTitle.Content = "User Data";
       LoadInstanceList ();
-//      if (MainProject.ActiveUserType == UserType.Teacher) // [wip] uncomment this line.
+      if (MainProject.ActiveUserType == UserType.Teacher)
         LoadUserList ();
       ActiveView = View.Instances;
     }
@@ -834,7 +835,9 @@ namespace ActivityTracker
           if (item.Selected)
           {
             MainProject.SelectActivity (item.ID);
-            MainProject.DeleteActivity ();
+            // Only allow  users to delete their own projects.
+            if (MainProject.SelectedActivityCreatorID == MainProject.ActiveUserID)
+              MainProject.DeleteActivity ();
           }
         LoadActivityList ();
         break;
@@ -1072,6 +1075,14 @@ namespace ActivityTracker
     private void MenuQuit_Click (object sender, RoutedEventArgs e)
     {
       Application.Current.Shutdown ();
+    }
+
+
+    private void MenuExportUserAccount_Click (object sender, RoutedEventArgs e)
+    {
+      var save = new Microsoft.Win32.SaveFileDialog ();
+      if (save.ShowDialog () == true)
+        MainProject.ExportData (save.FileName, DataType.User);
     }
   }
 }

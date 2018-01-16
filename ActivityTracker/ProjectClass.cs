@@ -18,7 +18,7 @@ namespace ActivityTracker
 // Class Project
 ﻿//========================================================================================
 
-  public class Project
+  public partial class Project
   {
     private List <User> Users;
     private List <Activity> Activities;
@@ -30,6 +30,14 @@ namespace ActivityTracker
     private Session SelectedSession;
     DatabaseConnection Database;
     private string DatabaseFileName;
+
+    public Int64? ActiveUserID
+    {
+      get
+      {
+        return ActiveUser != null ? (Int64?) ActiveUser.ID : null;
+      }
+    }
 
     public UserType ActiveUserType
     {
@@ -70,6 +78,15 @@ namespace ActivityTracker
       get
       {
         return SelectedActivity != null ? SelectedActivity.Name : "";
+      }
+    }
+
+    public Int64? SelectedActivityCreatorID
+    {
+      get
+      {
+        return SelectedActivity != null ? 
+               (Int64?) SelectedActivity.CreatorID : null;
       }
     }
 

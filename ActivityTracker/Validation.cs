@@ -155,6 +155,53 @@ namespace ActivityTracker
       return true;
     }
 
+
+    // Convert string to usertype.
+    public static UserType StringToUserType (string s)
+    {
+      if (s == "Student")
+        return UserType.Student;
+      if (s == "Teacher")
+        return UserType.Teacher;
+      return UserType.None;
+    }
+
+
+    // Convert date to string.
+    public static string DateToString (DateTime d)
+    {
+      return d.Year.ToString () + "-" + 
+             d.Month.ToString () + "-" +
+             d.Day.ToString ();
+    }
+
+
+    // Convert string to date.
+    public static DateTime StringToDate (string s)
+    {
+      int year = 2000;
+      int month = 1;
+      int day = 1;
+      string [] split = s.Split (new [] {'-'});
+      if (split.Length == 3)
+      {
+        try
+        {
+          year = Convert.ToInt32 (split [0]);
+          month = Convert.ToInt32 (split [1]);
+          day = Convert.ToInt32 (split [2]);
+        }
+        catch
+        {
+          // Incorrect string format found.
+          year = 1999;
+          month = 12;
+          day = 31;
+        }
+      }
+      return new DateTime (year, month, day);
+    }
+
   }
 
 }

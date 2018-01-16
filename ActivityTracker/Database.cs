@@ -159,53 +159,9 @@ namespace ActivityTracker
     } */
 
 
-    private static string DateToString (DateTime d)
-    {
-      return d.Year.ToString () + "-" + 
-             d.Month.ToString () + "-" +
-             d.Day.ToString ();
-    }
-
-
-    private static DateTime StringToDate (string s)
-    {
-      int year = 2000;
-      int month = 1;
-      int day = 1;
-      string [] split = s.Split (new [] {'-'});
-      if (split.Length == 3)
-      {
-        try
-        {
-          year = Convert.ToInt32 (split [0]);
-          month = Convert.ToInt32 (split [1]);
-          day = Convert.ToInt32 (split [2]);
-        }
-        catch
-        {
-          // Incorrect string format found.
-          year = 1999;
-          month = 12;
-          day = 31;
-        }
-      }
-       return new DateTime (year, month, day);
-    }
 
 //----------------------------------------------------------------------------------------
 // Users
-
-    // Convert string to usertype.
-    public static UserType StringToUserType (string s)
-    {
-      if (s == "Student")
-        return UserType.Student;
-      if (s == "Teacher")
-        return UserType.Teacher;
-
-      return UserType.Student; // [wip] maybe return alternative?
-    }
-
 
     // Load all activities from database to list. List allTags must already be filled.
     public bool LoadAllUsers (List <User> users, List <Tag> allTags)
@@ -225,7 +181,7 @@ namespace ActivityTracker
             (Int64) activityReader ["UserID"], 
             (string) activityReader ["UserName"],
             (string) activityReader ["PasswordHash"],
-            StringToUserType ((string) activityReader ["UserType"]));
+            Validation.StringToUserType ((string) activityReader ["UserType"]));
           users.Add (newUser);
         }
         activityReader.Close ();
@@ -263,7 +219,7 @@ namespace ActivityTracker
         {
           userID = (Int64) reader ["UserID"];
           passwordHash = (string) reader ["PasswordHash"];
-          type = StringToUserType ((string) reader ["UserType"]);
+          type = Validation.StringToUserType ((string) reader ["UserType"]);
           success = true;
         }
         if (reader.Read ())
@@ -556,7 +512,7 @@ namespace ActivityTracker
         {
           newSession = new Session (
             (Int64) reader ["SessionID"],
-            StringToDate ((string) reader ["Date"]),
+            Validation.StringToDate ((string) reader ["Date"]),
             (Int64) reader ["TimeSpent"],
             (Int64) reader ["PercentFinished"]);
           sessions.Add (newSession);
@@ -579,7 +535,7 @@ namespace ActivityTracker
           "(InstanceID, Date, TimeSpent, PercentFinished) values (" +
           // session.ID.ToString () + ", " +
           instanceID.ToString () + ", '" +
-          DateToString (session.Date) + "', " +
+          Validation.DateToString (session.Date) + "', " +
           session.TimeSpent.ToString () + ", " +
           session.PercentFinished.ToString () + ")";
         success = command.ExecuteNonQuery () == 1;
@@ -602,7 +558,7 @@ namespace ActivityTracker
       if (Open ())
       {
         command.CommandText = "UPDATE Sessions SET " +
-          "Date = '" + DateToString (session.Date) +
+          "Date = '" + Validation.DateToString (session.Date) +
           "', TimeSpent = " + session.TimeSpent.ToString () +
           ", PercentFinished = " + session.PercentFinished.ToString () +
           " WHERE SessionID = " + session.ID.ToString (); 

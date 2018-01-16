@@ -18,7 +18,12 @@
         <Menu HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0">
             <MenuItem Header="_File">
                 <MenuItem x:Name="MenuImport" Header="_Import"/>
-                <MenuItem x:Name="MenuExport" Header="_Export"/>
+                <MenuItem x:Name="MenuExport" Header="_Export">
+                    <MenuItem x:Name="MenuExportUserAccount" Header="_User account" Click="MenuExportUserAccount_Click"/>
+                    <MenuItem x:Name="MenuExportSelection" Header="_Selection"/>
+                    <MenuItem x:Name="MenuExportUserData" Header="User _data"/>
+                    <MenuItem x:Name="MenuExportAllData" Header="All _data"/>
+                </MenuItem>
                 <MenuItem x:Name="MenuQuit" Header="_Quit" Click="MenuQuit_Click"/>
             </MenuItem>
             <MenuItem Header="_View">

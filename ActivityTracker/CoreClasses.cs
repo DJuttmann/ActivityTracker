@@ -22,6 +22,14 @@ namespace ActivityTracker
     Teacher
   }
 
+  public enum DataType
+  {
+    User,
+    Activity,
+    Instance,
+    Session
+  }
+
 
 //========================================================================================
 // Class User
