@@ -28,13 +28,47 @@ namespace ActivityTracker
       InitializeComponent ();
 
       MyProject = null;
+      ClearValidation ();
+    }
+
+
+    // Clear validation colours
+    private void ClearValidation ()
+    {
+      RegisterName.Background = Validation.ValidInput;
+      RegisterPassword.Background = Validation.ValidInput;
+      RegisterPassword2.Background = Validation.ValidInput;
+    }
+
+
+    // Validate registration input
+    private bool Validate ()
+    {
+      ClearValidation ();
+      bool success = true;
+      if (!Validation.IsName (RegisterName.Text))
+      {
+        RegisterName.Background = Validation.InvalidInput;
+        success = false;
+      }
+      if (!Validation.ValidatePassword (RegisterPassword.Password))
+      {
+        RegisterPassword.Background = Validation.InvalidInput;
+        success = false;
+      }
+      if (RegisterPassword2.Password != RegisterPassword.Password)
+      {
+        RegisterPassword2.Background = Validation.InvalidInput;
+        success = false;
+      }
+      return success;
     }
 
 
     // Register button click handler.
     private void ButtonRegisterClick (object sender, RoutedEventArgs e)
     {
-      if (MyProject != null && RegisterPassword.Password == RegisterPassword2.Password)
+      if (MyProject != null && Validate ())
       {
         if (MyProject.RegisterUser (RegisterName.Text, RegisterPassword.Password, 
               DatabaseConnection.StringToUserType (RegisterUserType.Text)))
@@ -44,7 +78,7 @@ namespace ActivityTracker
         }
         else
         {
-          // [wip] Show some error message.
+          MessageBox.Show ("Could not register user");
         }
       }
     }
@@ -55,6 +89,13 @@ namespace ActivityTracker
     {
       DialogResult = false;
       this.Close ();
+    }
+
+
+    private void RegisterPassword2_KeyDown (object sender, KeyEventArgs e)
+    {
+      if (e.Key == Key.Enter)
+        ButtonRegisterClick (null, null);
     }
   }
 }

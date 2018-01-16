@@ -5,16 +5,17 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ActivityTracker"
         mc:Ignorable="d"
-        Title="LoginWindow" Height="168" Width="300">
-    
+        Title="LoginWindow" Height="184" Width="311.2" ResizeMode="NoResize">
+
     <Grid>
-        
-        <TextBox x:Name="LoginName" HorizontalAlignment="Left" Height="23" Margin="109,9,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="175"/>
-        <PasswordBox x:Name="LoginPassword" HorizontalAlignment="Left" Height="23" Margin="109,48,0,0" VerticalAlignment="Top" Width="175"/>
+
+        <TextBox x:Name="LoginName" HorizontalAlignment="Left" Height="23" Margin="109,9,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="175" TextChanged="LoginName_TextChanged"/>
+        <PasswordBox x:Name="LoginPassword" HorizontalAlignment="Left" Height="23" Margin="109,48,0,0" VerticalAlignment="Top" Width="175" KeyDown="LoginPassword_KeyDown" PasswordChanged="LoginPassword_TextChanged"/>
         <Label Content="User name" HorizontalAlignment="Left" HorizontalContentAlignment="Right" Margin="4,6,0,0" VerticalAlignment="Top" Width="100"/>
         <Label Content="Password" HorizontalAlignment="Left" HorizontalContentAlignment="Right" Margin="4,46,0,0" VerticalAlignment="Top" Width="100"/>
-        <Button x:Name="ButtonLogin" Content="Login" HorizontalAlignment="Left" Margin="40,101,0,0" VerticalAlignment="Top" Width="75" Click="ButtonLoginClick"/>
-        <Button x:Name="ButtonLoginCancel" Content="Cancel" HorizontalAlignment="Left" Margin="177,101,0,0" VerticalAlignment="Top" Width="75" Click="ButtonLoginCancelClick"/>
+        <Button x:Name="ButtonLogin" Content="Login" HorizontalAlignment="Left" Margin="40,111,0,0" VerticalAlignment="Top" Width="75" Click="ButtonLoginClick"/>
+        <Button x:Name="ButtonLoginCancel" Content="Cancel" HorizontalAlignment="Left" Margin="177,111,0,0" VerticalAlignment="Top" Width="75" Click="ButtonLoginCancelClick"/>
+        <Label x:Name="WarningMessage" Content="" HorizontalContentAlignment="Center" HorizontalAlignment="Stretch" Height="29" Margin="7,77,6.8,0" VerticalAlignment="Top" Width="291"/>
 
     </Grid>
 </Window>

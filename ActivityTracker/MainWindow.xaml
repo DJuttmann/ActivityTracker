@@ -19,7 +19,7 @@
             <MenuItem Header="_File">
                 <MenuItem x:Name="MenuImport" Header="_Import"/>
                 <MenuItem x:Name="MenuExport" Header="_Export"/>
-                <MenuItem x:Name="MenuQuit" Header="_Quit"/>
+                <MenuItem x:Name="MenuQuit" Header="_Quit" Click="MenuQuit_Click"/>
             </MenuItem>
             <MenuItem Header="_View">
                 <MenuItem x:Name="MenuActivities" Header="_Activity list" Click="MenuActivitiesClick"/>
@@ -27,7 +27,7 @@
             </MenuItem>
             <MenuItem Header="_User">
                 <MenuItem x:Name="MenuLogin" Header="Log _in" Click="MenuLoginClick"/>
-                <MenuItem x:Name="MenuLogout" Header="Log _out" Click="MenuLogoutClick"/>
+                <MenuItem x:Name="MenuLogout" Header="Log _out" Click="MenuLogoutClick" IsEnabled="False"/>
                 <MenuItem x:Name="MenuRegister" Header="_Register" Click="MenuRegisterClick"/>
                 <MenuItem x:Name="MenuEditAccount" Header="_Edit account"/>
             </MenuItem>
@@ -35,16 +35,18 @@
                 <MenuItem Header="_Settings"/>
             </MenuItem>
         </Menu>
+        <Label x:Name="ActiveUserLabel" HorizontalAlignment="Right" Content="[Not logged in]" HorizontalContentAlignment="Right" Margin="0,-4,-0.4,25.4" Height="29" Width="295" Grid.Row="0" Grid.RowSpan="2"/>
 
         <Grid x:Name="Toolbar" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1">
             <Grid.Background>
                 <SolidColorBrush Color="#FFA6CAED"/>
             </Grid.Background>
             <Label x:Name="ViewTitle" Content="&lt;TITLE&gt;" HorizontalAlignment="Left" Height="31" VerticalAlignment="Top" Width="129" FontSize="16"/>
-            <Button x:Name="AddButton" Content="Add" HorizontalAlignment="Left" Margin="148,5,0,0" VerticalAlignment="Top" Width="64" Click="AddButton_Click"/>
-            <Button x:Name="EditButton" Content="Edit" HorizontalAlignment="Left" Margin="222,5,0,0" VerticalAlignment="Top" Width="64" Click="EditButton_Click"/>
-            <Button x:Name="DeleteButton" Content="Delete" HorizontalAlignment="Left" Margin="296,5,0,0" VerticalAlignment="Top" Width="64" Click="DeleteButton_Click"/>
-            <Button x:Name="StartButton" Content="Start Activity" HorizontalAlignment="Left" Margin="428,5,0,0" VerticalAlignment="Top" Width="86" Click="StartButtonClick"/>
+            <Button x:Name="AddButton" Content="&#10133; Add" HorizontalAlignment="Left" Margin="128,5,0,0" VerticalAlignment="Top" Width="62" Click="AddButton_Click"/>
+            <Button x:Name="EditButton" Content="&#9999; Edit" HorizontalAlignment="Left" Margin="200,5,0,0" VerticalAlignment="Top" Width="64" Click="EditButton_Click"/>
+            <Button x:Name="DeleteButton" Content="&#10134; Delete" HorizontalAlignment="Left" Margin="273,5,0,0" VerticalAlignment="Top" Width="63" Click="DeleteButton_Click"/>
+            <Button x:Name="StartButton" Content="&#9654; Start Activity" HorizontalAlignment="Right" Margin="0,5,6,0" VerticalAlignment="Top" Width="97" Click="StartButtonClick"/>
+            <Button x:Name="BackButton" Content="&#129028; Back" HorizontalAlignment="Right" Margin="0,5,6,0" VerticalAlignment="Top" Width="56" Click="BackButtonClick"/>
         </Grid>
 
         <Grid x:Name="MainGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="2">
@@ -54,7 +56,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- ACTIVITIES -->
-            <Border x:Name="ActivityView" Visibility="Visible" BorderBrush="#000000" BorderThickness="1" Grid.Column="0">
+            <Border x:Name="ActivityView" Visibility="Hidden" BorderBrush="#000000" BorderThickness="1" Grid.Column="0">
                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="30"/>
@@ -64,8 +66,8 @@
                         <Grid.Background>
                             <SolidColorBrush Color="#FFF0F0F0"/>
                         </Grid.Background>
-                        <Label Content="Available Activities" HorizontalAlignment="Left" Margin="5,2,0,0" VerticalAlignment="Top" Height="25" Width="107" Grid.Column="1"/>
-                        <Label Content="Sort by" HorizontalAlignment="Left" HorizontalContentAlignment="Right" Height="25" Margin="198,2,0,0" VerticalAlignment="Top" Width="86"/>
+                        <Label Content="Available Activities" HorizontalAlignment="Left" Margin="5,2,0,0" VerticalAlignment="Top" Height="25" Width="226"/>
+                        <Label Content="Sort by" HorizontalAlignment="Left" HorizontalContentAlignment="Right" Height="25" Margin="312,2,0,0" VerticalAlignment="Top" Width="86"/>
                     </Grid>
                     <ScrollViewer HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1">
                         <StackPanel x:Name="ActivityList" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="Auto"/>
@@ -223,8 +225,8 @@
                         <Grid.Background>
                             <SolidColorBrush Color="#FFF0F0F0"/>
                         </Grid.Background>
-                        <Label x:Name="InstancesText" Content="Activities for &lt;user&gt;" HorizontalAlignment="Left" Margin="5,2,0,0" VerticalAlignment="Top" Height="25" Width="139"/>
-                        <Label x:Name="SortInstancesText" Content="Sort by" HorizontalAlignment="Left" HorizontalContentAlignment="Right" Height="25" Margin="198,2,0,0" VerticalAlignment="Top" Width="86"/>
+                        <Label x:Name="InstancesText" Content="&lt;user&gt; - Started activities" HorizontalAlignment="Left" Margin="5,2,0,0" VerticalAlignment="Top" Height="25" Width="291"/>
+                        <Label x:Name="SortInstancesText" Content="Sort by" HorizontalAlignment="Left" HorizontalContentAlignment="Right" Height="25" Margin="296,2,0,0" VerticalAlignment="Top" Width="86"/>
                     </Grid>
                     <ScrollViewer HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1">
                         <StackPanel x:Name="InstanceList" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="Auto"/>
@@ -267,7 +269,7 @@
 
 
             <!-- SESSIONS -->
-            <Border x:Name="SessionView" Visibility="Hidden" BorderBrush="#000000" BorderThickness="1" Grid.Column="0">
+            <Border x:Name="SessionView" Visibility="Visible" BorderBrush="#000000" BorderThickness="1" Grid.Column="0">
                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="30"/>
@@ -277,8 +279,8 @@
                         <Grid.Background>
                             <SolidColorBrush Color="#FFF0F0F0"/>
                         </Grid.Background>
-                        <Label x:Name="SessionsText" Content="&lt;Project name&gt; sessions" HorizontalAlignment="Left" Margin="5,2,0,0" VerticalAlignment="Top" Height="25" Width="288"/>
-                        <Label x:Name="ProgressText" Content="00:00h 0%" HorizontalAlignment="Left" HorizontalContentAlignment="Right" Height="25" Margin="298,2,0,0" VerticalAlignment="Top" Width="78"/>
+                        <Label x:Name="SessionsText" Content="&lt;Project name&gt; sessions" HorizontalAlignment="Left" Margin="5,2,0,0" VerticalAlignment="Top" Height="28" Width="288"/>
+                        <Label x:Name="ProgressText" Content="[00:00h 0%]" HorizontalAlignment="Right" HorizontalContentAlignment="Right" Height="28" Margin="0,2,4,0" VerticalAlignment="Top" Width="160"/>
                     </Grid>
                     <ScrollViewer HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1">
                         <StackPanel x:Name="SessionList" HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="Auto"/>

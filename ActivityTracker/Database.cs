@@ -323,8 +323,9 @@ namespace ActivityTracker
 //----------------------------------------------------------------------------------------
 // Activities
 
-    // Load all activities from database to list. List allTags must already be filled.
-    public bool LoadAllActivities (List <Activity> activities, List <Tag> allTags)
+    // Load all activities from database to list. Lists allTags/allUsers must already be filled.
+    public bool LoadAllActivities (List <Activity> activities, List <User> allUsers,
+                                   List <Tag> allTags)
     {
       bool success = false;
       SQLiteCommand command = new SQLiteCommand (Connection);
@@ -337,11 +338,14 @@ namespace ActivityTracker
         SQLiteDataReader activityReader = command.ExecuteReader ();
         while (activityReader.Read ())
         {
+          User creator = allUsers.Find (x => x.ID == (Int64) activityReader ["CreatorID"]);
+          string creatorName = creator != null ? creator.Name : "[unknown user]";
           newActivity = new Activity (
             (Int64) activityReader ["ActivityID"], 
             (Int64) activityReader ["CreatorID"],
             (string) activityReader ["ActName"],
-            (string) activityReader ["Description"]);
+            (string) activityReader ["Description"],
+            creatorName);
           activities.Add (newActivity);
         }
         activityReader.Close ();

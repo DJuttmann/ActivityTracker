@@ -255,14 +255,14 @@ namespace ActivityTracker
 
 
     // Constructor.
-    public Activity (Int64 id, Int64 creatorID, string name, string description)
+    public Activity (Int64 id, Int64 creatorID, string name, string description, string creatorName)
     {
       this.ID = id;
       CreatorID = creatorID;
       Name = name;
       Description = description;
       tags = new List <Tag> ();
-      CreatorName = "unknown";
+      CreatorName = creatorName;
     }
 
 

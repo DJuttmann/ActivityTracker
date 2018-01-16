@@ -4,14 +4,36 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Windows.Media;
 
 namespace ActivityTracker
 {
   class Validation
   {
-    private static readonly Regex NamePattern = new Regex ("^[ \t]*[^ \t].*$");
+    private static readonly Regex NamePattern = new Regex ("^[ \t]*[^ \t'][^']*$");
+    private static readonly Regex TextPattern = new Regex ("^[^']*$");
 
-    
+    public static readonly SolidColorBrush InvalidInput = 
+      new SolidColorBrush (Color.FromArgb (0xFF, 0xFF, 0xA0, 0xA0));
+    public static readonly SolidColorBrush ValidInput = 
+      new SolidColorBrush (Color.FromArgb (0xFF, 0xFF, 0xFF, 0xFF));
+   
+
+    // Verify if string is a name (max 32 characters, no ' allowed,
+    // contains at least one non-space character)
+    public static bool IsName (string s)
+    {
+      return s.Length <= 32 && NamePattern.IsMatch (s);
+    }
+
+
+    // Verify if string is text (max 1024 characters, no ' alowed)
+    public static bool IsText (string s)
+    {
+      return s.Length <= 1024 && TextPattern.IsMatch (s);
+    }
+
+
     // Verify if string is a number.
     public static bool IsNumber (string s)
     {
@@ -98,6 +120,15 @@ namespace ActivityTracker
     }
 
 
+    // Convert int (minutes) to time string (H:M)
+    public static string FormatTime (Int64 minutes)
+    {
+      Int64 hours = minutes / 60;
+      minutes %= 60;
+      return hours.ToString () + ":" + (minutes < 10 ? "0" : "") + minutes.ToString ();
+    }
+
+
     // Verify is string is percentage.
     public static bool IsPercent (string s)
     {
@@ -111,9 +142,17 @@ namespace ActivityTracker
     }
 
 
-    public static bool IsName (string s)
+    // Check if password is not too short or too long, and if its characters are valid.
+    public static bool ValidatePassword (string password)
     {
-      return NamePattern.IsMatch (s);
+      if (password.Length < 8 || password.Length > 32)
+        return false;
+      for (int i = 0; i < password.Length; i++)
+      {
+        if (password [i] < ' ' || password [i] > '~')
+          return false;
+      }
+      return true;
     }
 
   }

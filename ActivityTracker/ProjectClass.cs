@@ -35,9 +35,19 @@ namespace ActivityTracker
     {
       get
       {
-        return ActiveUser != null ? ActiveUser.Type : UserType.Student;
+        return ActiveUser != null ? ActiveUser.Type : UserType.None;
       }
     }
+
+    public string ActiveUserName
+    {
+      get
+      {
+        return ActiveUser != null ? ActiveUser.Name : "";
+      }
+    }
+
+    public string ActiveUserPassword {get {return ActiveUser != null ? ActiveUser.PasswordHash : "";}}
 
     public string SelectedUserName
     {
@@ -77,6 +87,34 @@ namespace ActivityTracker
       {
         return SelectedActivity != null ? SelectedActivity.TagNames
                                         : new List <string> ();
+      }
+    }
+
+    public string SelectedInstanceName
+    {
+      get
+      {
+        if (SelectedInstance == null)
+          return "";
+        Activity a = Activities.Find (x => x.ID == SelectedInstance.ActivityID);
+        return a != null ? a.Name : "[unknown activity]";
+      }
+    }
+
+    public string SelectedInstanceTimeSpent
+    {
+      get
+      {
+        return SelectedInstance != null ? 
+               Validation.FormatTime (SelectedInstance.TimeSpent) : "0:00";
+      }
+    }
+
+    public Int64 SelectedInstancePercent
+    {
+      get
+      {
+        return SelectedInstance != null ? SelectedInstance.PercentFinished : 0;
       }
     }
 
@@ -131,9 +169,9 @@ namespace ActivityTracker
         Database = new DatabaseConnection (fileName);
         if (!Database.LoadAllTags (Tags))
           success = false;
-        if (!Database.LoadAllActivities (Activities, Tags))
-          success = false;
         if (!Database.LoadAllUsers (Users, Tags))
+          success = false;
+        if (!Database.LoadAllActivities (Activities, Users, Tags))
           success = false;
       }
       catch (Exception ex)
@@ -152,20 +190,6 @@ namespace ActivityTracker
 
 //========================================================================================
 // Account management
-
-    
-    // Check if password is not too short or too long, and if its characters are valid.
-    bool ValidatePassword (string password)
-    {
-      if (password.Length < 8 || password.Length > 32)
-        return false;
-      for (int i = 0; i < password.Length; i++)
-      {
-        if (password [i] < ' ' || password [i] > '~')
-          return false;
-      }
-      return true;
-    }
 
     
     // Convert byte to hex string.
@@ -202,8 +226,8 @@ namespace ActivityTracker
     {
       if (Database == null || ActiveUser != null) // cannot register if someone is already logged in
         return false;
-      if (!ValidatePassword (password))
-        return false;
+//      if (!Validation.ValidatePassword (password))
+//        return false;
 
       // check if the username already exists.
       if (Users.Find (x => x.Name == userName) != null)
@@ -225,18 +249,15 @@ namespace ActivityTracker
     // Try to log in a user given username and password. Returns false on failure.
     public bool LoginUser (string userName, string password)
     {
-      if (!ValidatePassword (password))
-        return false;
+//      if (!Validation.ValidatePassword (password))
+//        return false;
 
       User tempUser = Users.Find (x => x.Name == userName);
-//      if (!tempUser.LoadFromDatabase (Database, userName))
       if (tempUser == null)
       {
-        System.Windows.MessageBox.Show ("Username not found.");
         return false; // user not found.
       }
-      // [wip] password check disabled for now
-      if (true) // tempUser.PasswordHash == CreateHash (password))
+      if (tempUser.PasswordHash == CreateHash (password))
       {
         ActiveUser = tempUser;
         SelectUser (ActiveUser);
@@ -332,7 +353,8 @@ namespace ActivityTracker
     public bool CreateActivity (string name, string description, 
                                 List <string> tagList)
     {
-      Activity newActivity = new Activity (0, SelectedUser.ID, name, description);
+      Activity newActivity = new Activity (0, SelectedUser.ID, name, description,
+                                           SelectedUser.Name);
       if (!Database.AddActivity (newActivity))
         return false;
       Activities.Add (newActivity);
@@ -344,7 +366,6 @@ namespace ActivityTracker
         Tag currentTag = Tags.Find (x => x.Name == tag);
         if (currentTag == null) // if tag does not exist yet, create it.
         {
-          System.Windows.MessageBox.Show ("Tag " + tag + " does not exist");
           currentTag = new Tag (0, tag);
           if (!Database.AddTag (currentTag))
             continue;
@@ -368,7 +389,7 @@ namespace ActivityTracker
       if (activity == null)
         return false;
       Activity editActivity = new Activity (SelectedActivity.ID, activity.CreatorID,
-                                            name, description);
+                                            name, description, SelectedActivity.CreatorName);
 
       if (!Database.UpdateActivity (editActivity))
         return false;
@@ -472,6 +493,8 @@ namespace ActivityTracker
     // Get instance for SelectedUser by index in list.
     public Instance GetInstance (int index)
     {
+      if (SelectedUser == null)
+        return null;
       return SelectedUser.GetInstance (index);
     }
 

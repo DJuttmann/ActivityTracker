@@ -47,11 +47,6 @@ namespace ActivityTracker
     private View ActiveView;
 
 
-    private readonly SolidColorBrush InvalidInput = 
-      new SolidColorBrush (Color.FromArgb (0xFF, 0xFF, 0xA0, 0xA0));
-    private readonly SolidColorBrush ValidInput = 
-      new SolidColorBrush (Color.FromArgb (0xFF, 0xFF, 0xFF, 0xFF));
-
     // Constructor.
     public MainWindow ()
     {
@@ -67,8 +62,8 @@ namespace ActivityTracker
       ShowNoView ();
 
       // [wip] Login admin -- for testing purposes, remove later.
-      MainProject.LoginUser ("Admin", "12345678");
-      LoginSetup ();
+      if (MainProject.LoginUser ("Alice", "12345678"))
+        LoginSetup ();
     }
 
 
@@ -77,15 +72,22 @@ namespace ActivityTracker
       ActivityFilterMode.Items.Add (FilterModeName);
       ActivityFilterMode.Items.Add (FilterModeCreator);
       ActivityFilterMode.Items.Add (FilterModeTag);
+      ActivityFilterMode.SelectedItem = FilterModeName;
       UserFilterMode.Items.Add (FilterModeName);
       UserFilterMode.Items.Add (FilterModeTag);
+      UserFilterMode.SelectedItem = FilterModeName;
     }
 
 
     // Loads the window for user after logging in.
     private void LoginSetup ()
     {
+      MenuLogin.IsEnabled = false;
+      MenuLogout.IsEnabled = true;
+      MenuRegister.IsEnabled = false;
       ShowInstanceView ();
+      Toolbar.IsEnabled = true;
+      ActiveUserLabel.Content = "Logged in as: " + MainProject.ActiveUserName;
 
       UserSearchBox.Text = "";
       if (MainProject.ActiveUserType == UserType.Student)
@@ -105,7 +107,8 @@ namespace ActivityTracker
       ActivityView.Visibility = Visibility.Hidden;
       FindActivity.Visibility = Visibility.Hidden;
       NewActivity.Visibility = Visibility.Hidden;
-      StartButton.Visibility = Visibility.Visible;
+      StartButton.Visibility = Visibility.Hidden;
+      BackButton.Visibility = Visibility.Hidden;
 
       InstanceView.Visibility = Visibility.Hidden;
       SelectUser.Visibility = Visibility.Hidden;
@@ -126,6 +129,7 @@ namespace ActivityTracker
       NewActivity.Visibility = Visibility.Hidden;
       EditActivity.Visibility = Visibility.Hidden;
       StartButton.Visibility = Visibility.Visible;
+      BackButton.Visibility = Visibility.Hidden;
 
       InstanceView.Visibility = Visibility.Hidden;
       SelectUser.Visibility = Visibility.Hidden;
@@ -157,6 +161,7 @@ namespace ActivityTracker
       NewActivity.Visibility = Visibility.Hidden;
       EditActivity.Visibility = Visibility.Hidden;
       StartButton.Visibility = Visibility.Hidden;
+      BackButton.Visibility = Visibility.Hidden;
 
       InstanceView.Visibility = Visibility.Visible;
       SelectUser.Visibility = Visibility.Visible;
@@ -190,6 +195,7 @@ namespace ActivityTracker
       NewActivity.Visibility = Visibility.Hidden;
       EditActivity.Visibility = Visibility.Hidden;
       StartButton.Visibility = Visibility.Hidden;
+      BackButton.Visibility = Visibility.Visible;
 
       InstanceView.Visibility = Visibility.Hidden;
       SelectUser.Visibility = Visibility.Hidden;
@@ -199,9 +205,10 @@ namespace ActivityTracker
       EditSession.Visibility = Visibility.Hidden;
 
       ViewTitle.Content = "Session Log";
-      SessionsText.Content = MainProject.SelectedActivityName + " - " + 
-                             MainProject.SelectedUserName +
-                             "'s sessions";
+      SessionsText.Content = MainProject.SelectedUserName + " \u2013 Sessions for " + 
+                             MainProject.SelectedInstanceName;
+      ProgressText.Content = MainProject.SelectedInstanceTimeSpent + " \u2013 " +
+                             MainProject.SelectedInstancePercent + "%";
       LoadSessionList ();
       ActiveView = View.Sessions;
     }
@@ -360,7 +367,7 @@ namespace ActivityTracker
         if (show)
         {
           var item = new UIActivityItem (this, activity.ID, activity.Name,
-                                         "Unknown", activity.Description);
+                                         activity.CreatorName, activity.Description);
           ActivityItems.Add (item);
         }
         i++;
@@ -396,7 +403,9 @@ namespace ActivityTracker
     // Remove new activity validation colours.
     public void ClearNewActivityValidation ()
     {
-      NewActivityName.Background = ValidInput;
+      NewActivityName.Background = Validation.ValidInput;
+      NewActivityDescription.Background = Validation.ValidInput;
+      NewActivityTagInput.Background = Validation.ValidInput;
     }
 
 
@@ -407,17 +416,35 @@ namespace ActivityTracker
       bool success = true;
       if (!Validation.IsName (NewActivityName.Text))
       {
-        NewActivityName.Background = InvalidInput;
+        NewActivityName.Background = Validation.InvalidInput;
+        success = false;
+      }
+      if (!Validation.IsText (NewActivityDescription.Text))
+      {
+        NewActivityName.Background = Validation.InvalidInput;
         success = false;
       }
       return success;
     }
 
 
+    // Validate new activity tag input.
+    public bool ValidateNewActivityTag ()
+    {
+      if (!Validation.IsName (NewActivityTagInput.Text))
+      {
+        NewActivityTagInput.Background = Validation.InvalidInput;
+        return false;
+      }
+      NewActivityTagInput.Background = Validation.ValidInput;
+      return true;
+    }
+
+
     // Remove edit activity validation colours.
     public void ClearEditActivityValidation ()
     {
-      EditActivityName.Background = ValidInput;
+      EditActivityName.Background = Validation.ValidInput;
     }
 
 
@@ -428,21 +455,34 @@ namespace ActivityTracker
       bool success = true;
       if (!Validation.IsName (EditActivityName.Text))
       {
-        EditActivityName.Background = InvalidInput;
+        EditActivityName.Background = Validation.InvalidInput;
         success = false;
       }
       return success;
     }
 
 
-﻿//----------------------------------------------------------------------------------------
+﻿    // Validate new activity tag input.
+    public bool ValidateEditActivityTag ()
+    {
+      if (!Validation.IsName (EditActivityTagInput.Text))
+      {
+        EditActivityTagInput.Background = Validation.InvalidInput;
+        return false;
+      }
+      EditActivityTagInput.Background = Validation.ValidInput;
+      return true;
+    }
+
+
+//----------------------------------------------------------------------------------------
 // Instance view
 
 
     // Load the list of instances for the selected user and activity.
     private void LoadInstanceList ()
     {
-      InstancesText.Content = "Activities for " + MainProject.SelectedUserName;
+      InstancesText.Content = MainProject.SelectedUserName + " \u2013 Started activities";
       InstanceItems.Clear ();
       int i = 0;
       Instance instance = MainProject.GetInstance (i);
@@ -565,11 +605,11 @@ namespace ActivityTracker
     // Remove new session validation colours.
     private void ClearNewSessionValidation ()
     {
-        NewSessionYear.Background = ValidInput;
-        NewSessionMonth.Background = ValidInput;
-        NewSessionDay.Background = ValidInput;
-        NewSessionTimeSpent.Background = ValidInput;
-        NewSessionPercentFinished.Background = ValidInput;
+        NewSessionYear.Background = Validation.ValidInput;
+        NewSessionMonth.Background = Validation.ValidInput;
+        NewSessionDay.Background = Validation.ValidInput;
+        NewSessionTimeSpent.Background = Validation.ValidInput;
+        NewSessionPercentFinished.Background = Validation.ValidInput;
     }
 
 
@@ -580,27 +620,27 @@ namespace ActivityTracker
       bool success = true;
       if (!Validation.IsYear (NewSessionYear.Text))
       {
-        NewSessionYear.Background = InvalidInput;
+        NewSessionYear.Background = Validation.InvalidInput;
         success = false;
       }
       if (!Validation.IsMonth (NewSessionMonth.Text))
       {
-        NewSessionMonth.Background = InvalidInput;
+        NewSessionMonth.Background = Validation.InvalidInput;
         success = false;
       }
       if (!Validation.IsDay (NewSessionDay.Text))
       {
-        NewSessionDay.Background = InvalidInput;
+        NewSessionDay.Background = Validation.InvalidInput;
         success = false;
       }
       if (!Validation.IsTime (NewSessionTimeSpent.Text))
       {
-        NewSessionTimeSpent.Background = InvalidInput;
+        NewSessionTimeSpent.Background = Validation.InvalidInput;
         success = false;
       }
       if (!Validation.IsPercent (NewSessionPercentFinished.Text))
       {
-        NewSessionPercentFinished.Background = InvalidInput;
+        NewSessionPercentFinished.Background = Validation.InvalidInput;
         success = false;
       }
       return success;
@@ -610,11 +650,11 @@ namespace ActivityTracker
     // Remove edit session validation colours.
     private void ClearEditSessionValidation ()
     {
-        EditSessionYear.Background = ValidInput;
-        EditSessionMonth.Background = ValidInput;
-        EditSessionDay.Background = ValidInput;
-        EditSessionTimeSpent.Background = ValidInput;
-        EditSessionPercentFinished.Background = ValidInput;
+        EditSessionYear.Background = Validation.ValidInput;
+        EditSessionMonth.Background = Validation.ValidInput;
+        EditSessionDay.Background = Validation.ValidInput;
+        EditSessionTimeSpent.Background = Validation.ValidInput;
+        EditSessionPercentFinished.Background = Validation.ValidInput;
     }
 
 
@@ -625,27 +665,27 @@ namespace ActivityTracker
       bool success = true;
       if (!Validation.IsYear (EditSessionYear.Text))
       {
-        EditSessionYear.Background = InvalidInput;
+        EditSessionYear.Background = Validation.InvalidInput;
         success = false;
       }
       if (!Validation.IsMonth (EditSessionMonth.Text))
       {
-        EditSessionMonth.Background = InvalidInput;
+        EditSessionMonth.Background = Validation.InvalidInput;
         success = false;
       }
       if (!Validation.IsDay (EditSessionDay.Text))
       {
-        EditSessionDay.Background = InvalidInput;
+        EditSessionDay.Background = Validation.InvalidInput;
         success = false;
       }
       if (!Validation.IsTime (EditSessionTimeSpent.Text))
       {
-        EditSessionTimeSpent.Background = InvalidInput;
+        EditSessionTimeSpent.Background = Validation.InvalidInput;
         success = false;
       }
       if (!Validation.IsPercent (EditSessionPercentFinished.Text))
       {
-        EditSessionPercentFinished.Background = InvalidInput;
+        EditSessionPercentFinished.Background = Validation.InvalidInput;
         success = false;
       }
       return success;
@@ -699,7 +739,12 @@ namespace ActivityTracker
     private void MenuLogoutClick (object sender, RoutedEventArgs e)
     {
       MainProject.Logout ();
+      MenuLogin.IsEnabled = true;
+      MenuLogout.IsEnabled = false;
+      MenuRegister.IsEnabled = true;
+      ActiveUserLabel.Content = "";
       ShowNoView ();
+      Toolbar.IsEnabled = false;
     }
 
 
@@ -833,6 +878,12 @@ namespace ActivityTracker
     }
 
 
+    private void BackButtonClick (object sender, RoutedEventArgs e)
+    {
+      ShowInstanceView ();
+    }
+
+
     private void ButtonCeateActivity_Click (object sender, RoutedEventArgs e)
     {
       if (!ValidateNewActivity ())
@@ -921,7 +972,7 @@ namespace ActivityTracker
 
     private void NewActivityAddTag_Click (object sender, RoutedEventArgs e)
     {
-      if (Validation.IsName (NewActivityTagInput.Text))
+      if (ValidateNewActivityTag ())
       {
         foreach (object obj in NewActivityTags.Items)
         {
@@ -952,7 +1003,7 @@ namespace ActivityTracker
 
     private void EditActivityAddTag_Click (object sender, RoutedEventArgs e)
     {
-      if (Validation.IsName (EditActivityTagInput.Text))
+      if (ValidateEditActivityTag ())
       {
         foreach (object obj in EditActivityTags.Items)
         {
@@ -1015,6 +1066,12 @@ namespace ActivityTracker
           MessageBox.Show (UserIDs [UserList.SelectedIndex].ToString ());
         LoadInstanceList ();
       }
+    }
+
+
+    private void MenuQuit_Click (object sender, RoutedEventArgs e)
+    {
+      Application.Current.Shutdown ();
     }
   }
 }
