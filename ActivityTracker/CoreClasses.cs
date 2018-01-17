@@ -40,7 +40,7 @@ namespace ActivityTracker
   {
     public Int64 ID;
     public string Name {get; private set;}
-    public string PasswordHash {get; private set;}
+    public string PasswordHash {get; set;}
     public UserType Type {get; private set;}
     private List <Tag> Tags;
     private List <Instance> Instances;

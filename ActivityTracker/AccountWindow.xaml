@@ -1,0 +1,36 @@
+﻿<Window x:Class="ActivityTracker.AccountWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ActivityTracker"
+        mc:Ignorable="d"
+        Title="Edit Account" Height="334.8" Width="303.6">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="130.4"/>
+            <RowDefinition Height="4*"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <GroupBox Header="Password" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,10,9.6,12.4" Grid.Row="0">
+            <Grid >
+                <PasswordBox x:Name="AccountOldPassword" HorizontalAlignment="Left" Margin="126,10,0,0" VerticalAlignment="Top" Width="126"/>
+                <PasswordBox x:Name="AccountNewPassword" HorizontalAlignment="Left" Margin="126,33,0,0" VerticalAlignment="Top" Width="126"/>
+                <PasswordBox x:Name="AccountNewPassword2" HorizontalAlignment="Left" Margin="126,56,0,0" VerticalAlignment="Top" Width="126"/>
+                <Label Content="Old password" HorizontalAlignment="Left" Margin="43,6,0,0" VerticalAlignment="Top"/>
+                <Label Content="New password" HorizontalAlignment="Left" Margin="38,29,0,0" VerticalAlignment="Top"/>
+                <Label Content="Repeat new password" HorizontalAlignment="Left" Margin="1,52,0,0" VerticalAlignment="Top"/>
+            </Grid>
+        </GroupBox>
+        <GroupBox Header="Tags" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10,2.6,9.6,9.8" Grid.Row="1">
+            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <Label Content="New tag" HorizontalAlignment="Left" Height="28" Margin="2,6,0,0" VerticalAlignment="Top" Width="61"/>
+                <Button x:Name="AccountAddTag" Content="Add" HorizontalAlignment="Left" Margin="68,10,0,0" VerticalAlignment="Top" Width="51" Click="AddTag_Click"/>
+                <TextBox x:Name="AccountNewTag" HorizontalAlignment="Left" Height="23" Margin="5,36,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="114" KeyDown="AccountNewTag_KeyDown"/>
+                <ListBox x:Name="AccountTagList" HorizontalAlignment="Left" Margin="130,10,0,9.8" VerticalAlignment="Stretch" Width="126" KeyDown="AccountTagList_KeyDown"/>
+            </Grid>
+        </GroupBox>
+        <Button x:Name="SaveAccount" Content="Save Changes" HorizontalAlignment="Right" Margin="0,0.4,9.6,0" Grid.Row="2" VerticalAlignment="Top" Width="93" Click="SaveAccount_Click"/>
+
+    </Grid>
+</Window>

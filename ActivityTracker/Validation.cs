@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Windows.Media;
+using System.Security.Cryptography;
+
 
 namespace ActivityTracker
 {
@@ -202,6 +204,35 @@ namespace ActivityTracker
       return new DateTime (year, month, day);
     }
 
+
+    // Convert byte to hex string.
+    private static String ByteToHex (byte b)
+    {
+      const string characters = "0123456789ABCDEF";
+      return characters.Substring (b >> 4, 1) + characters.Substring (b & 0b1111, 1);
+    }
+
+
+    // Create a hash from a password string.
+    public static string CreateHash (string password)
+    {
+      byte [] passwordArray = new byte [password.Length]; 
+      for (int i = 0; i < password.Length; i++)
+      {
+        passwordArray [i] = Convert.ToByte (password [i]);
+      }
+
+      var hash = new SHA512CryptoServiceProvider ();
+      byte [] hashArray = hash.ComputeHash (passwordArray);
+
+      StringBuilder hashString = new StringBuilder ();
+      for (int i = 0; i < hashArray.Length; i++)
+      {
+        hashString.Append (ByteToHex (hashArray [i]));
+      }
+      return hashString.ToString ();
+    }
+    
   }
 
 }

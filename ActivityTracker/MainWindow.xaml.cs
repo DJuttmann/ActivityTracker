@@ -61,9 +61,9 @@ namespace ActivityTracker
       UISetup ();
       ShowNoView ();
 
-      // [wip] Login admin -- for testing purposes, remove later.
+      /* [wip] Auto-login user -- for testing purposes, remove later.
       if (MainProject.LoginUser ("Alice", "12345678"))
-        LoginSetup ();
+        LoginSetup (); */
     }
 
 
@@ -85,6 +85,11 @@ namespace ActivityTracker
       MenuLogin.IsEnabled = false;
       MenuLogout.IsEnabled = true;
       MenuRegister.IsEnabled = false;
+      MenuEditAccount.IsEnabled = true;
+      MenuActivities.IsEnabled = true;
+      MenuInstances.IsEnabled = true;
+      MenuImport.IsEnabled = true;
+      MenuExport.IsEnabled = true;
       ShowInstanceView ();
       Toolbar.IsEnabled = true;
       ActiveUserLabel.Content = "Logged in as: " + MainProject.ActiveUserName +
@@ -743,9 +748,22 @@ namespace ActivityTracker
       MenuLogin.IsEnabled = true;
       MenuLogout.IsEnabled = false;
       MenuRegister.IsEnabled = true;
+      MenuEditAccount.IsEnabled = false;
+      MenuActivities.IsEnabled = false;
+      MenuInstances.IsEnabled = false;
+      MenuImport.IsEnabled = false;
+      MenuExport.IsEnabled = false;
       ActiveUserLabel.Content = "";
       ShowNoView ();
       Toolbar.IsEnabled = false;
+    }
+
+
+    private void MenuEditAccount_Click (object sender, RoutedEventArgs e)
+    {
+      var editAccount = new AccountWindow (MainProject);
+      if (editAccount.ShowDialog () == true)
+        MessageBox.Show ("Changes saved.");
     }
 
 
@@ -794,7 +812,8 @@ namespace ActivityTracker
       case View.Activities:
         selected = GetSelectedElements (ActivityItems);
         if (selected.Count == 1 && 
-            MainProject.SelectActivity (ActivityItems [selected [0]].ID))
+            MainProject.SelectActivity (ActivityItems [selected [0]].ID) &&
+            MainProject.SelectedActivityCreatorID == MainProject.ActiveUserID)
           ShowEditActivity ();
         break;
       case View.Instances:
@@ -978,12 +997,13 @@ namespace ActivityTracker
     {
       if (ValidateNewActivityTag ())
       {
+        string newTag = NewActivityTagInput.Text.ToLower ();
         foreach (object obj in NewActivityTags.Items)
         {
-          if ((string) obj == NewActivityTagInput.Text)
+          if ((string) obj == newTag)
             return;
         }
-        NewActivityTags.Items.Add (NewActivityTagInput.Text);
+        NewActivityTags.Items.Add (newTag);
         NewActivityTagInput.Text = string.Empty;
       }
     }
@@ -1009,12 +1029,13 @@ namespace ActivityTracker
     {
       if (ValidateEditActivityTag ())
       {
+        string newTag = NewActivityTagInput.Text.ToLower ();
         foreach (object obj in EditActivityTags.Items)
         {
-          if ((string) obj == EditActivityTagInput.Text)
+          if ((string) obj == newTag)
             return;
         }
-        EditActivityTags.Items.Add (EditActivityTagInput.Text);
+        EditActivityTags.Items.Add (newTag);
         EditActivityTagInput.Text = string.Empty;
       }
     }

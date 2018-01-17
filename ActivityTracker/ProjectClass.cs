@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
-using System.Security.Cryptography;
 
 
 namespace ActivityTracker
@@ -55,7 +54,22 @@ namespace ActivityTracker
       }
     }
 
-    public string ActiveUserPassword {get {return ActiveUser != null ? ActiveUser.PasswordHash : "";}}
+    public string ActiveUserPassword
+    {
+      get
+      {
+        return ActiveUser != null ? ActiveUser.PasswordHash : "";
+      }
+    }
+
+    public List <string> ActiveUserTags
+    {
+      get
+      {
+        return ActiveUser != null ? ActiveUser.TagNames
+                                  : new List <string> ();
+      }
+    }
 
     public string SelectedUserName
     {
@@ -209,35 +223,6 @@ namespace ActivityTracker
 // Account management
 
     
-    // Convert byte to hex string.
-    String ByteToHex (byte b)
-    {
-      const string characters = "0123456789ABCDEF";
-      return characters.Substring (b >> 4, 1) + characters.Substring (b & 0b1111, 1);
-    }
-
-
-    // Create a hash from a password string.
-    private string CreateHash (string password)
-    {
-      byte [] passwordArray = new byte [password.Length]; 
-      for (int i = 0; i < password.Length; i++)
-      {
-        passwordArray [i] = Convert.ToByte (password [i]);
-      }
-
-      var hash = new SHA512CryptoServiceProvider ();
-      byte [] hashArray = hash.ComputeHash (passwordArray);
-
-      StringBuilder hashString = new StringBuilder ();
-      for (int i = 0; i < hashArray.Length; i++)
-      {
-        hashString.Append (ByteToHex (hashArray [i]));
-      }
-      return hashString.ToString ();
-    }
-    
-
     // Register a new user into the system.
     public bool RegisterUser (string userName, string password, UserType type)
     {
@@ -251,7 +236,7 @@ namespace ActivityTracker
         return false;
       
       User newUser = new User (0, userName,
-                               CreateHash (password), type);
+                               Validation.CreateHash (password), type);
       if (Database.AddUser (newUser))
       {
         Users.Add (newUser);
@@ -274,7 +259,7 @@ namespace ActivityTracker
       {
         return false; // user not found.
       }
-      if (tempUser.PasswordHash == CreateHash (password))
+      if (tempUser.PasswordHash == Validation.CreateHash (password))
       {
         ActiveUser = tempUser;
         SelectUser (ActiveUser);
@@ -291,6 +276,52 @@ namespace ActivityTracker
       SelectUser (null);
       SelectActivity (null);
       SelectInstance (null);
+    }
+
+
+    // Set the password for the active user.
+    public bool SetActiveUserPassword (string password)
+    {
+      User tempUser = new User (ActiveUser.ID, ActiveUser.Name, 
+                                Validation.CreateHash (password), ActiveUser.Type);
+      if (Database.UpdateUser (tempUser))
+      {
+        ActiveUser.PasswordHash = tempUser.PasswordHash;
+        return true;
+      }
+      return false;
+    }
+
+
+    // Set the tags for the active user.
+    public bool SetActiveUserTags (List <string> tagList)
+    {
+      // Add new tags
+      foreach (string tag in tagList)
+      {
+        Tag currentTag = Tags.Find (x => x.Name == tag);
+        if (currentTag == null) // if tag does not exist yet, create it.
+        {
+          currentTag = new Tag (0, tag);
+          if (!Database.AddTag (currentTag))
+            continue;
+          Tags.Add (currentTag);
+        }
+        if (Database.AddUserTag (ActiveUser.ID, currentTag.ID))
+          ActiveUser.AddTag (currentTag);
+      }
+
+      // Remove deleted tags
+      foreach (string tag in ActiveUser.TagNames)
+      {
+        if (!tagList.Contains (tag))
+        {
+          Tag currentTag = Tags.Find (x => x.Name == tag);
+          if (Database.RemoveUserTag (ActiveUser.ID, currentTag.ID))
+            ActiveUser.RemoveTag (currentTag);
+        }
+      }
+      return true;
     }
 
 

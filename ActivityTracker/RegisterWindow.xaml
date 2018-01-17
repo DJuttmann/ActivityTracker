@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ActivityTracker"
         mc:Ignorable="d"
-        Title="RegisterWindow" Height="255.2" Width="306.933" ResizeMode="NoResize">
+        Title="Register" Height="255.2" Width="306.933" ResizeMode="NoResize">
 
     <Grid>
 

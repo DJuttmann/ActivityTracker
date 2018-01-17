@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ActivityTracker"
         mc:Ignorable="d"
-        Title="LoginWindow" Height="184" Width="311.2" ResizeMode="NoResize">
+        Title="Log in" Height="184" Width="311.2" ResizeMode="NoResize">
 
     <Grid>
 

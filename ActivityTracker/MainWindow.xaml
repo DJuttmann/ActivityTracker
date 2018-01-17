@@ -17,8 +17,8 @@
         <!-- MENU -->
         <Menu HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0">
             <MenuItem Header="_File">
-                <MenuItem x:Name="MenuImport" Header="_Import"/>
-                <MenuItem x:Name="MenuExport" Header="_Export">
+                <MenuItem x:Name="MenuImport" Header="_Import" IsEnabled="False"/>
+                <MenuItem x:Name="MenuExport" Header="_Export" IsEnabled="False">
                     <MenuItem x:Name="MenuExportUserAccount" Header="_User account" Click="MenuExportUserAccount_Click"/>
                     <MenuItem x:Name="MenuExportSelection" Header="_Selection" Click="MenuExportSelection_Click"/>
                     <MenuItem x:Name="MenuExportUserData" Header="User _data" Click="MenuExportUserData_Click"/>
@@ -27,14 +27,14 @@
                 <MenuItem x:Name="MenuQuit" Header="_Quit" Click="MenuQuit_Click"/>
             </MenuItem>
             <MenuItem Header="_View">
-                <MenuItem x:Name="MenuActivities" Header="_Activity list" Click="MenuActivitiesClick"/>
-                <MenuItem x:Name="MenuInstances" Header="_User Data" Click="MenuInstancesClick"/>
+                <MenuItem x:Name="MenuActivities" Header="_Activity list" Click="MenuActivitiesClick" IsEnabled="False"/>
+                <MenuItem x:Name="MenuInstances" Header="_User Data" Click="MenuInstancesClick" IsEnabled="False"/>
             </MenuItem>
             <MenuItem Header="_User">
                 <MenuItem x:Name="MenuLogin" Header="Log _in" Click="MenuLoginClick"/>
                 <MenuItem x:Name="MenuLogout" Header="Log _out" Click="MenuLogoutClick" IsEnabled="False"/>
                 <MenuItem x:Name="MenuRegister" Header="_Register" Click="MenuRegisterClick"/>
-                <MenuItem x:Name="MenuEditAccount" Header="_Edit account"/>
+                <MenuItem x:Name="MenuEditAccount" Header="_Edit account" IsEnabled="False" Click="MenuEditAccount_Click"/>
             </MenuItem>
             <MenuItem Header="_Settings">
                 <MenuItem Header="_Settings"/>
@@ -81,7 +81,7 @@
             </Border>
 
             <!-- FIND ACTIVITY -->
-            <Border x:Name="FindActivity" Visibility="Visible" BorderBrush="#000000" BorderThickness="1" Grid.Column="1">
+            <Border x:Name="FindActivity" Visibility="Hidden" BorderBrush="#000000" BorderThickness="1" Grid.Column="1">
                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="26"/>
@@ -113,7 +113,7 @@
             </Border>
 
             <!-- NEW ACTIVITY -->
-            <Border x:Name="NewActivity" Visibility="Hidden" BorderBrush="#000000" BorderThickness="1" Grid.Column="1">
+            <Border x:Name="NewActivity" Visibility="Visible" BorderBrush="#000000" BorderThickness="1" Grid.Column="1">
                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="26"/>

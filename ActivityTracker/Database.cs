@@ -266,10 +266,10 @@ namespace ActivityTracker
       if (Open ())
       {
         command.CommandText = "UPDATE Users SET " +
-          "UserName = " + user.Name +
-          ", PasswordHash = " + user.PasswordHash +
-          ", UserType = " + user.Type.ToString () +
-          " WHERE UserID = " + user.ID.ToString (); 
+          "UserName = '" + user.Name +
+          "', PasswordHash = '" + user.PasswordHash +
+          "', UserType = '" + user.Type.ToString () +
+          "' WHERE UserID = " + user.ID.ToString (); 
         success = command.ExecuteNonQuery () == 1;
         Close ();
       }
@@ -663,7 +663,7 @@ namespace ActivityTracker
       {
         command.CommandText = "DELETE FROM UserTags WHERE " +
           "UserID = " + UserID.ToString () +
-          ", TagID = " + TagID.ToString ();
+          " AND TagID = " + TagID.ToString ();
         success = command.ExecuteNonQuery () > 0;
         Close ();
       }
