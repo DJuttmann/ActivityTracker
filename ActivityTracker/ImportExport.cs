@@ -87,6 +87,56 @@ namespace ActivityTracker
     }
 
 
+    // Read input file and load its contents into data objects.
+    public static List <object> Read ()
+    {
+      List <object> Data = new List <object> ();
+      while (! StreamIn.EndOfStream)
+      {
+        List <string> line = SplitLine (StreamIn.ReadLine ());
+        if (line.Count > 0)
+        {
+          switch (line [0])
+          {
+          case "User":
+            if (line.Count >= 5)
+              Data.Add (new User (
+                Convert.ToInt64 (line [1]), 
+                line [2], 
+                line [3],
+                Validation.StringToUserType (line [4])));
+            break;
+          case "Activity":
+            if (line.Count >= 6)
+              Data.Add (new Activity (
+                Convert.ToInt64 (line [1]), 
+                Convert.ToInt64 (line [2]), 
+                line [3],
+                line [4],
+                line [5]));
+            break;
+          case "Instance":
+            if (line.Count >= 3)
+              Data.Add (new Instance (
+                Convert.ToInt64 (line [1]), 
+                null));
+            break;
+          case "Session":
+            if (line.Count >= 5)
+              Data.Add (new Session (
+                Convert.ToInt64 (line [1]), 
+                Validation.StringToDate (line [2]),
+                Convert.ToInt64 (line [1]), 
+                Convert.ToInt64 (line [1])));
+            break;
+          default:
+            break;
+          }
+        }
+      }
+      return Data;
+    }
+
 ﻿//========================================================================================
 // Writing
 
@@ -197,7 +247,7 @@ namespace ActivityTracker
   public partial class Project
   {
 
-    public void ExportData (string filename, DataType type)
+    public void ExportData (DataType type)
     {
       object data;
       switch (type)
@@ -219,11 +269,77 @@ namespace ActivityTracker
         break;
       }
 
-      if (!ImportExport.OpenFileWrite (filename))
-        return;
       ImportExport.WriteData (data);
-      ImportExport.CloseFileWrite ();
     }
+
+
+    // Export all data for selected user.
+    public void ExportUserData ()
+    {
+      ExportData (DataType.User);
+
+      int i = 0;
+      Activity activity = SelectedUser.GetActivity (i);
+      while (activity != null)
+      {
+        ImportExport.WriteData (activity);
+        i++;
+        activity = SelectedUser.GetActivity (i);
+      }
+
+      i = 0;
+      Instance instance = SelectedUser.GetInstance (i);
+      while (instance != null)
+      {
+        ImportExport.WriteData (instance);
+        int j = 0;
+        Session session = instance.GetSession (j);
+        while (session != null)
+        {
+          ImportExport.WriteData (session);
+          j++;
+          session = instance.GetSession (j);
+        }
+        i++;
+        instance = SelectedUser.GetInstance (i);
+      }
+    }
+
+
+    // Export all data.
+    public void ExportAllData ()
+    {
+      User tempUser = SelectedUser;
+      foreach (User user in Users)
+      {
+        SelectUser (user);
+        ExportUserData ();
+      }
+      SelectUser (tempUser);
+    }
+
+
+    /* Import data from file.
+    public void Import ()
+    {
+      List <object> Data = ImportExport.Read ();
+      for (int i = 0; i < Data.Count; i++)
+      {
+        switch (Data [i])
+        {
+        case User user:
+          break;
+        case Activity activity:
+          CreateActivity (activity.Name, activity.Description, new List <string> ());
+          break;
+        case Instance instance:
+          CreateActivity (activity.Name, activity.Description, new List <string> ());
+          break;
+        case Session session:
+          break;
+        }
+      }
+    } */
 
   }
 

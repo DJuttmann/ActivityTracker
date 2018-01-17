@@ -792,19 +792,19 @@ namespace ActivityTracker
       switch (ActiveView)
       {
       case View.Activities:
-        selected = GetSelectedElements ((List <ISelectableUI>) ActivityItems);
+        selected = GetSelectedElements (ActivityItems);
         if (selected.Count == 1 && 
             MainProject.SelectActivity (ActivityItems [selected [0]].ID))
           ShowEditActivity ();
         break;
       case View.Instances:
-        selected = GetSelectedElements ((List <ISelectableUI>) InstanceItems);
+        selected = GetSelectedElements (InstanceItems);
         if (selected.Count == 1 && 
             MainProject.SelectInstance (InstanceItems [selected [0]].ID))
           ShowSessionView ();
         break;
       case View.Sessions:
-        selected = GetSelectedElements ((List <ISelectableUI>) SessionItems);
+        selected = GetSelectedElements (SessionItems);
         if (selected.Count == 1 && 
             MainProject.SelectSession (SessionItems [selected [0]].ID))
           ShowEditSession ();
@@ -825,16 +825,15 @@ namespace ActivityTracker
 
     private void DeleteButton_Click (object sender, RoutedEventArgs e)
     {
-      if (!ConfirmDelete ())
-        return;
-
+      List <int> selected;
       switch (ActiveView)
       {
       case View.Activities:
-        foreach (var item in ActivityItems)
-          if (item.Selected)
+        selected = GetSelectedElements (ActivityItems);
+        if (selected.Count > 0 && ConfirmDelete ())
+          foreach (var item in selected)
           {
-            MainProject.SelectActivity (item.ID);
+            MainProject.SelectActivity (ActivityItems [item].ID);
             // Only allow  users to delete their own projects.
             if (MainProject.SelectedActivityCreatorID == MainProject.ActiveUserID)
               MainProject.DeleteActivity ();
@@ -843,20 +842,22 @@ namespace ActivityTracker
         break;
 
       case View.Instances:
-        foreach (var item in InstanceItems)
-          if (item.Selected)
+        selected = GetSelectedElements (InstanceItems);
+        if (selected.Count > 0 && ConfirmDelete ())
+          foreach (var item in selected)
           {
-            MainProject.SelectInstance (item.ID);
+            MainProject.SelectInstance (InstanceItems [item].ID);
             MainProject.DeleteInstance ();
           }
         LoadInstanceList ();
         break;
 
       case View.Sessions:
-        foreach (var item in SessionItems)
-          if (item.Selected)
+        selected = GetSelectedElements (SessionItems);
+        if (selected.Count > 0 && ConfirmDelete ())
+          foreach (var item in selected)
           {
-            MainProject.SelectSession (item.ID);
+            MainProject.SelectSession (SessionItems [item].ID);
             MainProject.DeleteSession ();
           }
         LoadSessionList ();
@@ -1078,11 +1079,113 @@ namespace ActivityTracker
     }
 
 
+    // Export user account.
     private void MenuExportUserAccount_Click (object sender, RoutedEventArgs e)
     {
       var save = new Microsoft.Win32.SaveFileDialog ();
-      if (save.ShowDialog () == true)
-        MainProject.ExportData (save.FileName, DataType.User);
+      if (save.ShowDialog () == true && ImportExport.OpenFileWrite (save.FileName))
+      {
+        MainProject.ExportData (DataType.User);
+        ImportExport.CloseFileWrite ();
+      }
     }
+
+
+    // Export selection.
+    private void MenuExportSelection_Click (object sender, RoutedEventArgs e)
+    {
+      List <int> selected;
+      switch (ActiveView)
+      {
+      case View.Activities:
+        selected = GetSelectedElements (ActivityItems);
+        break;
+      case View.Instances:
+        selected = GetSelectedElements (InstanceItems);
+        break;
+      case View.Sessions:
+        selected = GetSelectedElements (SessionItems);
+        break;
+      default:
+        selected = new List <int> ();
+        break;
+      }
+      if (selected.Count == 0)
+        return;
+
+      var save = new Microsoft.Win32.SaveFileDialog ();
+      if (save.ShowDialog () == true && ImportExport.OpenFileWrite (save.FileName))
+      {
+        switch (ActiveView)
+        {
+        case View.Activities:
+          foreach (int item in selected)
+          {
+            MainProject.SelectActivity (ActivityItems [item].ID);
+            MainProject.ExportData (DataType.Activity);
+          }
+          break;
+
+        case View.Instances:
+          foreach (int item in selected)
+          {
+            MainProject.SelectActivity (InstanceItems [item].ID);
+            MainProject.ExportData (DataType.Activity);
+          }
+          break;
+
+        case View.Sessions:
+          foreach (int item in selected)
+          {
+            MainProject.SelectActivity (InstanceItems [item].ID);
+            MainProject.ExportData (DataType.Activity);
+          }
+          break;
+
+        default:
+          break;
+        }
+        ImportExport.CloseFileWrite ();
+      }
+    }
+
+
+    // Export all data for user.
+    private void MenuExportUserData_Click (object sender, RoutedEventArgs e)
+    {
+      var save = new Microsoft.Win32.SaveFileDialog ();
+      if (save.ShowDialog () == true && ImportExport.OpenFileWrite (save.FileName))
+      {
+        MainProject.ExportUserData ();
+        ImportExport.CloseFileWrite ();
+      }
+    }
+
+
+    private void MenuExportAllData_Click (object sender, RoutedEventArgs e)
+    {
+      var save = new Microsoft.Win32.SaveFileDialog ();
+      if (save.ShowDialog () == true && ImportExport.OpenFileWrite (save.FileName))
+      {
+        MainProject.ExportAllData ();
+        ImportExport.CloseFileWrite ();
+      }
+    }
+
+
+    private void MenuImport_Click (object sender, RoutedEventArgs e)
+    {
+      MessageBox.Show ("Not implemented yet.");
+      return;
+
+      var load = new Microsoft.Win32.OpenFileDialog ();
+      if (load.ShowDialog () == true && ImportExport.OpenFileRead (load.FileName))
+      {
+        // MainProject.Import ();
+        ImportExport.CloseFileWrite ();
+      }
+    }
+
   }
+
 }

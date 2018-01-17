@@ -27,7 +27,7 @@ namespace ActivityTracker
     User,
     Activity,
     Instance,
-    Session
+    Session,
   }
 
 
@@ -129,6 +129,15 @@ namespace ActivityTracker
     public void RemoveTag (Tag deleteTag)
     {
       Tags.Remove (deleteTag);
+    }
+
+
+    // Return instance with given index.
+    public Activity GetActivity (int index)
+    {
+      if (index < 0 || index >= Activities.Count)
+        return null;
+      return Activities [index];
     }
 
 

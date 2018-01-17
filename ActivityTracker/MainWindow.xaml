@@ -20,9 +20,9 @@
                 <MenuItem x:Name="MenuImport" Header="_Import"/>
                 <MenuItem x:Name="MenuExport" Header="_Export">
                     <MenuItem x:Name="MenuExportUserAccount" Header="_User account" Click="MenuExportUserAccount_Click"/>
-                    <MenuItem x:Name="MenuExportSelection" Header="_Selection"/>
-                    <MenuItem x:Name="MenuExportUserData" Header="User _data"/>
-                    <MenuItem x:Name="MenuExportAllData" Header="All _data"/>
+                    <MenuItem x:Name="MenuExportSelection" Header="_Selection" Click="MenuExportSelection_Click"/>
+                    <MenuItem x:Name="MenuExportUserData" Header="User _data" Click="MenuExportUserData_Click"/>
+                    <MenuItem x:Name="MenuExportAllData" Header="All _data" Click="MenuExportAllData_Click"/>
                 </MenuItem>
                 <MenuItem x:Name="MenuQuit" Header="_Quit" Click="MenuQuit_Click"/>
             </MenuItem>
@@ -240,7 +240,7 @@
             </Border>
 
             <!-- SELECT USER -->
-            <Border x:Name="SelectUser" Visibility="Visible" BorderBrush="#000000" BorderThickness="1" Grid.Column="1">
+            <Border x:Name="SelectUser" Visibility="Hidden" BorderBrush="#000000" BorderThickness="1" Grid.Column="1">
                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="26"/>
@@ -331,7 +331,7 @@
                             <TextBox x:Name="NewSessionMonth" HorizontalAlignment="Stretch" Height="19" Margin="0,0,6,0" TextWrapping="NoWrap" VerticalAlignment="Top" TextChanged="TextBox_TextChanged" Grid.Column="1"/>
                             <TextBox x:Name="NewSessionDay" HorizontalAlignment="Stretch" Height="19" Margin="0,0,6,0" TextWrapping="NoWrap" VerticalAlignment="Top" TextChanged="TextBox_TextChanged" Grid.Column="2"/>
                         </Grid>
-                        <Label Content="Time spent" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="86" Grid.Row="2"/>
+                        <Label Content="Time spent (H:M or M)" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="135" Grid.Row="2" Margin="0,0.4,0,0" Grid.RowSpan="2"/>
                         <TextBox x:Name="NewSessionTimeSpent" HorizontalAlignment="Stretch" Height="19" Margin="6,0,6,0" TextWrapping="Wrap" VerticalAlignment="Top" TextChanged="TextBox_TextChanged" Grid.Row="3"/>
                         <Label Content="% finished" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="86" Grid.Row="4"/>
                         <TextBox x:Name="NewSessionPercentFinished" HorizontalAlignment="Stretch" Height="19" Margin="6,0,6,0" TextWrapping="Wrap" VerticalAlignment="Top" TextChanged="TextBox_TextChanged" Grid.Row="5"/>
@@ -385,7 +385,7 @@
                             <TextBox x:Name="EditSessionMonth" HorizontalAlignment="Left" Height="19" Margin="67,0,0,0" TextWrapping="NoWrap" VerticalAlignment="Top" TextChanged="TextBox_TextChanged" MaxLength="2" Grid.ColumnSpan="2" Width="28"/>
                             <TextBox x:Name="EditSessionDay" HorizontalAlignment="Stretch" Height="19" Margin="0,0,6,0" TextWrapping="NoWrap" VerticalAlignment="Top" TextChanged="TextBox_TextChanged" Grid.Column="2" MaxLength="2"/>
                         </Grid>
-                        <Label Content="Time spent (H:M or M)" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="128" Grid.Row="2" Margin="0,0.4,0,0" Grid.RowSpan="2"/>
+                        <Label Content="Time spent (H:M or M)" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="137" Grid.Row="2" Margin="0,0.4,0,0" Grid.RowSpan="2"/>
                         <TextBox x:Name="EditSessionTimeSpent" HorizontalAlignment="Stretch" Height="19" Margin="6,0,6,0" TextWrapping="NoWrap" VerticalAlignment="Top" TextChanged="TextBox_TextChanged" Grid.Row="3" MaxLength="10"/>
                         <Label Content="% finished" HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" Width="86" Grid.Row="4"/>
                         <TextBox x:Name="EditSessionPercentFinished" HorizontalAlignment="Stretch" Height="19" Margin="6,0,6,0" TextWrapping="NoWrap" VerticalAlignment="Top" TextChanged="TextBox_TextChanged" Grid.Row="5" MaxLength="3"/>
