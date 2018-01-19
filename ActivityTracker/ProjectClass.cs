@@ -693,7 +693,8 @@ namespace ActivityTracker
 //========================================================================================
 // Tag management
 
-
+   
+    // create a new tag in the database.
     public bool CreateTag (string name)
     {
       Tag newTag = new Tag (0, name);

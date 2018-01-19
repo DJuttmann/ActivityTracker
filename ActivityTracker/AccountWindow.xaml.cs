@@ -22,6 +22,7 @@ namespace ActivityTracker
     private Project MyProject = null;  
 
 
+    // Constructor.
     public AccountWindow (Project p)
     {
       InitializeComponent ();
@@ -32,6 +33,7 @@ namespace ActivityTracker
     }
 
 
+    // Remove validation colours.
     private void ClearValidation ()
     {
       AccountOldPassword.Background = Validation.ValidInput;

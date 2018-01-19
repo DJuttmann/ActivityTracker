@@ -380,6 +380,7 @@ namespace ActivityTracker
 
 //----------------------------------------------------------------------------------------
 
+    // Constructor
     public Instance (Int64 id, Activity act)
     {
       this.ID = id;
@@ -405,6 +406,7 @@ namespace ActivityTracker
     }
 
 
+    // Add session to the instance.
     public void AddSession (Session newSession)
     {
       if (!Sessions.Contains (newSession))
@@ -415,12 +417,14 @@ namespace ActivityTracker
     }
 
 
+    // Delete session from the instance.
     public void DeleteSession (Int64 id)
     {
       Sessions.RemoveAll (x => x.ID == id);
     }
 
 
+    // Comparison function for sorting sessions.
     private static int CompareDates (Session a, Session b)
     {
       if (a.Date < b.Date)
@@ -431,6 +435,7 @@ namespace ActivityTracker
     }
 
 
+    // Load sessions from database.
     public bool LoadDataFromDatabase (DatabaseConnection database)
     {
       DataLoaded = database.LoadInstanceSessions (ID, Sessions);
@@ -451,6 +456,7 @@ namespace ActivityTracker
     public Int64 PercentFinished {get; set;}
 
 
+    // Constructor.
     public Session (Int64 id, DateTime date, Int64 timeSpent, Int64 percentFinished)
     {
       this.ID = id;
@@ -460,18 +466,21 @@ namespace ActivityTracker
     }
 
 
+    // Set the date.
     public void SetDateTime (int year, int month, int day, int hour, int minute, int second)
     {
       Date = new DateTime (year, month, day, hour, minute, second);
     }
 
 
+    // Set the time spent.
     public void SetTimeSpent (int timeSpent)
     {
       TimeSpent = timeSpent;
     }
 
 
+    // Set the progress percentage.
     public void SetPercentFinished (int percentFinished)
     {
       PercentFinished = percentFinished;
@@ -491,6 +500,7 @@ namespace ActivityTracker
     public string Name {get; private set;}
 
 
+    // Constructor.
     public Tag (Int64 id, string name)
     {
       this.ID = id;
@@ -498,6 +508,7 @@ namespace ActivityTracker
     }
 
 
+    // Equality of tags based on IDs.
     public override bool Equals (object obj)
     {
       if (obj is Tag t)

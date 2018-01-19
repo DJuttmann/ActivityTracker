@@ -372,9 +372,6 @@ namespace ActivityTracker
     // Remove activity from Database ()
     public bool DeleteActivity (Int64 activityID)
     {
-      // [wip]
-
-
       bool success = false;
       SQLiteCommand command = new SQLiteCommand (Connection);
       if (Open ())

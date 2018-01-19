@@ -1,6 +1,6 @@
 ﻿﻿==========================================================================================
 ActivityTracker by Daan Juttmann
-Version: 0.1 alpha
+Version: 1.0
 Created: 2017-12-21
 License: GNU General Public License 3.0 (https://www.gnu.org/licenses/gpl-3.0.en.html).
 ==========================================================================================
@@ -13,10 +13,13 @@ can add session, which log the amount of time spent on the activity, as well as 
 percentage of the activity was finished. Users can create their own activities as well.
 
 The basic user type is a Student. Teacher accounts have the additional ability to view 
-the activity progress of students.
+the activity progress of other students.
 
 
 -- USAGE --
+
+- Regisitration, log in, log out, account settings
+All these options can be found in the 'User' menu.
 
 - Activities
 You can view the activities by selecting 'Activity List' from the 'View' menu.
@@ -36,19 +39,19 @@ The Session Log shows a list of all sessions for a specific task, including for 
 session a date, duration, and percentage finished. Use the 'Add', 'Edit' and 'Delete'
 buttons to Update the list accordingly.
 
+- Import and export data
+To Import or export data, choose the appropriate option in the 'File' menu. Take note
+the Importing is not supported yet in this version!
 
--- IMPLEMENTED FEATURES FOR ALPHA VERSION 0.1 --
+- Settings
+Choosing the settings menu, you can select which database file to load when the program
+starts. If the file does not exist, an empty database will be created with that name.
 
-Several features have not yet been implemented. This is the current state of the program:
 
-- Only one account can be used for testing purposes. The program automatically loads the
-  'Admin' account. There user role has no efect on functionality yet.
-- A sample database is included, if none is present the program automatically sets up a
-  new one.
-- You can view, add, edit and delete new activities, instances and sessions.
-- A lot of data is not properly validated! entering incorrect values may lead to crashes.
-- The tag system has not been implemented yet.
-- No search is available yet.
-- Any settings screens are still missing.
+-- NOTES FOR RELEASE VERSION 1.0 --
+
+- Importing files not implemented yet.
+Due to some concerns with potential database collisions, the import function has not been
+implemented yet.
 
 ==========================================================================================

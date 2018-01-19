@@ -1,4 +1,10 @@
-﻿using System;
+﻿//========================================================================================
+// ActivityTracker by Daan Juttmann
+// Created: 2017-12-19
+// License: GNU General Public License 3.0 (https://www.gnu.org/licenses/gpl-3.0.en.html).
+//========================================================================================
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;

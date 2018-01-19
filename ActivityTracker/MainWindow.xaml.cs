@@ -35,10 +35,12 @@ namespace ActivityTracker
   /// </summary>
   public partial class MainWindow: Window
   {
+    private const string SettingsFile = "settings.txt";
     private const string FilterModeName = "name";
     private const string FilterModeCreator = "creator";
     private const string FilterModeTag = "tag";
 
+    private string DatabaseName;
     private Project MainProject;
     private List <ISelectableUI> ActivityItems;
     private List <ISelectableUI> InstanceItems;
@@ -52,21 +54,48 @@ namespace ActivityTracker
     {
       InitializeComponent ();
 
-      MainProject = new Project ();
-      MainProject.LoadDatabase ("ActivityDatabase.sqlite");
-      ActivityItems = new List <ISelectableUI> ();
-      InstanceItems = new List <ISelectableUI> ();
-      SessionItems = new List <ISelectableUI> ();
-      UserIDs = new List <Int64> ();
-      UISetup ();
-      ShowNoView ();
-
-      /* [wip] Auto-login user -- for testing purposes, remove later.
-      if (MainProject.LoginUser ("Alice", "12345678"))
-        LoginSetup (); */
+      if (LoadSettings ())
+      {
+        MainProject = new Project ();
+        if (!MainProject.LoadDatabase (DatabaseName))
+        {
+          MessageBox.Show ("Could not open database.");
+        }
+        ActivityItems = new List <ISelectableUI> ();
+        InstanceItems = new List <ISelectableUI> ();
+        SessionItems = new List <ISelectableUI> ();
+        UserIDs = new List <Int64> ();
+        UISetup ();
+        ShowNoView ();
+      }
     }
 
 
+    // Load the settings file containing the database file name.
+    private bool LoadSettings ()
+    {
+      try
+      {
+        string [] lines = System.IO.File.ReadAllLines (SettingsFile);
+        if (lines.Length > 0)
+          DatabaseName = lines [0];
+        else
+        {
+          DatabaseName = "ActivityDatabase.sqlite";
+          System.IO.File.WriteAllLines (SettingsFile, new string [] {DatabaseName});
+        }
+      }
+      catch
+      {
+        MessageBox.Show ("Could not open settings file");
+        Application.Current.Shutdown ();
+        return false;
+      }
+      return true;
+    }
+
+
+    // Setup some UI elements. (dropdown menus)
     private void UISetup ()
     {
       ActivityFilterMode.Items.Add (FilterModeName);
@@ -229,6 +258,7 @@ namespace ActivityTracker
     }
 
 
+    // Show the new activity panel.
     private void ShowNewActivity ()
     {
       if (ActiveView == View.Activities)
@@ -246,6 +276,7 @@ namespace ActivityTracker
     }
 
 
+    // Hide the new activity panel.
     private void HideNewActivity ()
     {
       if (ActiveView == View.Activities)
@@ -256,6 +287,7 @@ namespace ActivityTracker
     }
 
 
+    // Show the edit activity panel.
     private void ShowEditActivity ()
     {
       if (ActiveView == View.Activities)
@@ -275,6 +307,7 @@ namespace ActivityTracker
     }
 
 
+    // Hide the edit activity panel.
     private void HideEditActivity ()
     {
       if (ActiveView == View.Activities)
@@ -285,6 +318,7 @@ namespace ActivityTracker
     }
 
 
+    // Show the new session panel.
     private void ShowNewSession ()
     {
       if (ActiveView == View.Sessions)
@@ -302,6 +336,7 @@ namespace ActivityTracker
     }
 
 
+    // Hide the new session panel.
     private void HideNewSession ()
     {
       if (ActiveView == View.Sessions)
@@ -311,6 +346,7 @@ namespace ActivityTracker
     }
 
 
+    // Show the edit session panel.
     private void ShowEditSession ()
     {
       if (ActiveView == View.Sessions)
@@ -328,6 +364,7 @@ namespace ActivityTracker
     }
 
 
+    // Hide the edit session panel.
     private void HideEditSession ()
     {
       if (ActiveView == View.Sessions)
@@ -719,7 +756,8 @@ namespace ActivityTracker
 ﻿//========================================================================================
 // Event handlers
 
-
+   
+    // Register menu item.
     private void MenuRegisterClick (object sender, RoutedEventArgs e)
     {
       // Launch the registration window.
@@ -731,6 +769,7 @@ namespace ActivityTracker
     }
 
 
+    // Login menu item.
     private void MenuLoginClick (object sender, RoutedEventArgs e)
     {
       // Launch the login Window
@@ -742,6 +781,7 @@ namespace ActivityTracker
     }
 
 
+    // Logout menu item.
     private void MenuLogoutClick (object sender, RoutedEventArgs e)
     {
       MainProject.Logout ();
@@ -753,12 +793,13 @@ namespace ActivityTracker
       MenuInstances.IsEnabled = false;
       MenuImport.IsEnabled = false;
       MenuExport.IsEnabled = false;
-      ActiveUserLabel.Content = "";
+      ActiveUserLabel.Content = "[Not logged in]";
       ShowNoView ();
       Toolbar.IsEnabled = false;
     }
 
 
+    // Edit account menu item.
     private void MenuEditAccount_Click (object sender, RoutedEventArgs e)
     {
       var editAccount = new AccountWindow (MainProject);
@@ -767,24 +808,28 @@ namespace ActivityTracker
     }
 
 
+    // Search for activity button.
     private void ActivitySearchButton_Click (object sender, RoutedEventArgs e)
     {
       LoadActivityList ();
     }
 
 
+    // Instance menu item.
     private void MenuInstancesClick (object sender, RoutedEventArgs e)
     {
       ShowInstanceView ();
     }
 
 
+    // Activities menu item.
     private void MenuActivitiesClick (object sender, RoutedEventArgs e)
     {
       ShowActivityView ();
     }
 
 
+    // Toolbar add button.
     private void AddButton_Click (object sender, RoutedEventArgs e)
     {
       switch (ActiveView)
@@ -804,6 +849,7 @@ namespace ActivityTracker
     }
 
 
+    // Toolbar edit button.
     private void EditButton_Click (object sender, RoutedEventArgs e)
     {
       List <int> selected;
@@ -834,6 +880,7 @@ namespace ActivityTracker
     }
 
 
+    // Popup for delete confirmation.
     private bool ConfirmDelete ()
     {
       return MessageBox.Show ("Delete selected items?", "Warning", 
@@ -842,6 +889,7 @@ namespace ActivityTracker
     }
 
 
+    // Toolbar delete button.
     private void DeleteButton_Click (object sender, RoutedEventArgs e)
     {
       List <int> selected;
@@ -888,6 +936,7 @@ namespace ActivityTracker
     }
 
 
+    // Toolbar start activity button.
     private void StartButtonClick (object sender, RoutedEventArgs e)
     {
       bool started = false;
@@ -901,12 +950,14 @@ namespace ActivityTracker
     }
 
 
+    // Toolbar back button.
     private void BackButtonClick (object sender, RoutedEventArgs e)
     {
       ShowInstanceView ();
     }
 
 
+    // Create new activity button.
     private void ButtonCeateActivity_Click (object sender, RoutedEventArgs e)
     {
       if (!ValidateNewActivity ())
@@ -921,12 +972,14 @@ namespace ActivityTracker
     }
 
 
+    // Cancel activity creation button.
     private void ButtonCancelActivity_Click (object sender, RoutedEventArgs e)
     {
       HideNewActivity ();
     }
 
 
+    // Save edits for activity button.
     private void ButtonSaveEditActivity_Click (object sender, RoutedEventArgs e)
     {
       if (!ValidateEditActivity ())
@@ -942,12 +995,14 @@ namespace ActivityTracker
     }
 
 
+    // Cancel edits for activity button.
     private void ButtonCancelEditActivity_Click (object sender, RoutedEventArgs e)
     {
       HideEditActivity ();
     }
 
 
+    // Create new session button.
     private void ButtonCeateSession_Click (object sender, RoutedEventArgs e)
     {
       if (!ValidateNewSession ())
@@ -964,12 +1019,14 @@ namespace ActivityTracker
     }
 
 
+    // Cancel new session creation button.
     private void ButtonCancelSession_Click (object sender, RoutedEventArgs e)
     {
       HideNewSession ();
     }
 
 
+    // Save session edits button.
     private void ButtonEditSaveSession_Click (object sender, RoutedEventArgs e)
     {
       if (!ValidateEditSession ())
@@ -987,12 +1044,14 @@ namespace ActivityTracker
     }
 
 
+    // Cancel session edits button
     private void ButtonEditCancelSession_Click (object sender, RoutedEventArgs e)
     {
       HideEditSession ();
     }
 
 
+    // Add new activity tag button.
     private void NewActivityAddTag_Click (object sender, RoutedEventArgs e)
     {
       if (ValidateNewActivityTag ())
@@ -1009,6 +1068,7 @@ namespace ActivityTracker
     }
 
 
+    // Add new activity enter key confirmation.
     private void NewActivityTagInput_KeyDown (object sender, KeyEventArgs e)
     {
       if (e.Key == Key.Enter)
@@ -1016,6 +1076,7 @@ namespace ActivityTracker
     }
 
 
+    // Delete activity tags delete/backspace key.
     private void NewActivityTags_KeyDown (object sender, KeyEventArgs e)
     {
       if (e.Key == Key.Delete || e.Key == Key.Back)
@@ -1025,6 +1086,7 @@ namespace ActivityTracker
     }
 
 
+    // Edit activity tag button.
     private void EditActivityAddTag_Click (object sender, RoutedEventArgs e)
     {
       if (ValidateEditActivityTag ())
@@ -1041,6 +1103,7 @@ namespace ActivityTracker
     }
 
 
+    // Add activity tag enter key confirmation.
     private void EditActivityTagInput_KeyDown (object sender, KeyEventArgs e)
     {
       if (e.Key == Key.Enter)
@@ -1048,6 +1111,7 @@ namespace ActivityTracker
     }
 
 
+    // Delete activity tag delete/backspace key.
     private void EditActivityTags_KeyDown (object sender, KeyEventArgs e)
     {
       if (e.Key == Key.Delete || e.Key == Key.Back)
@@ -1057,12 +1121,14 @@ namespace ActivityTracker
     }
 
 
+    // [unused]
     private void TextBox_TextChanged (object sender, TextChangedEventArgs e)
     {
       // Do Noting.
     }
 
 
+    // Search activity enter confirmation.
     private void ActivitySearchBox_KeyDown (object sender, KeyEventArgs e)
     {
       if (e.Key == Key.Enter)
@@ -1070,12 +1136,14 @@ namespace ActivityTracker
     }
 
 
+    // Search user button.
     private void UserSearchButton_Click (object sender, RoutedEventArgs e)
     {
       LoadUserList ();
     }
 
 
+    // Search user enter confirmation.
     private void UserSearchBox_KeyDown (object sender, KeyEventArgs e)
     {
       if (e.Key == Key.Enter)
@@ -1083,6 +1151,7 @@ namespace ActivityTracker
     }
 
 
+    // User selected in selection box.
     private void UserList_SelectionChanged (object sender, SelectionChangedEventArgs e)
     {
       if (UserList.SelectedIndex >= 0 && UserList.SelectedIndex < UserIDs.Count)
@@ -1094,6 +1163,7 @@ namespace ActivityTracker
     }
 
 
+    // Quit menu item.
     private void MenuQuit_Click (object sender, RoutedEventArgs e)
     {
       Application.Current.Shutdown ();
@@ -1112,7 +1182,7 @@ namespace ActivityTracker
     }
 
 
-    // Export selection.
+    // Export selection menu item.
     private void MenuExportSelection_Click (object sender, RoutedEventArgs e)
     {
       List <int> selected;
@@ -1171,7 +1241,7 @@ namespace ActivityTracker
     }
 
 
-    // Export all data for user.
+    // Export all user data menu item.
     private void MenuExportUserData_Click (object sender, RoutedEventArgs e)
     {
       var save = new Microsoft.Win32.SaveFileDialog ();
@@ -1183,6 +1253,7 @@ namespace ActivityTracker
     }
 
 
+    // Export all data menu item.
     private void MenuExportAllData_Click (object sender, RoutedEventArgs e)
     {
       var save = new Microsoft.Win32.SaveFileDialog ();
@@ -1194,6 +1265,7 @@ namespace ActivityTracker
     }
 
 
+    // Import data menu item.
     private void MenuImport_Click (object sender, RoutedEventArgs e)
     {
       MessageBox.Show ("Not implemented yet.");
@@ -1202,11 +1274,23 @@ namespace ActivityTracker
       var load = new Microsoft.Win32.OpenFileDialog ();
       if (load.ShowDialog () == true && ImportExport.OpenFileRead (load.FileName))
       {
-        // MainProject.Import ();
+        // MainProject.Import (); // [wip]
         ImportExport.CloseFileWrite ();
       }
     }
 
+
+    // Settings menu item.
+    private void MenuSettings_Click (object sender, RoutedEventArgs e)
+    {
+      SettingsWindow settings = new SettingsWindow (DatabaseName);
+      if (settings.ShowDialog () == true)
+      {
+        DatabaseName = settings.FileName;
+        System.IO.File.WriteAllLines (SettingsFile, new string [] {DatabaseName});
+        MessageBox.Show ("Changes saved, restart program to open new database.");
+      }
+    }
   }
 
 }

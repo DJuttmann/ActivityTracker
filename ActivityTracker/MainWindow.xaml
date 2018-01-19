@@ -37,7 +37,7 @@
                 <MenuItem x:Name="MenuEditAccount" Header="_Edit account" IsEnabled="False" Click="MenuEditAccount_Click"/>
             </MenuItem>
             <MenuItem Header="_Settings">
-                <MenuItem Header="_Settings"/>
+                <MenuItem  x:Name="MenuSettings" Header="_Settings" Click="MenuSettings_Click"/>
             </MenuItem>
         </Menu>
         <Label x:Name="ActiveUserLabel" HorizontalAlignment="Right" Content="[Not logged in]" HorizontalContentAlignment="Right" Margin="0,-4,-0.4,25.4" Height="29" Width="295" Grid.Row="0" Grid.RowSpan="2"/>
